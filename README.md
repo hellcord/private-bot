@@ -20,7 +20,7 @@ bun start
 ```
 
 ### Обязательно отредачить 
-`config.ts` - там все с коментариями
+[`config.ts`](config.ts) - там все с коментариями
 
 ### И создать .env файлик, где будет
 ```sh
@@ -28,5 +28,5 @@ DISCORD_TOKEN=YOU_BOT_TOKEN
 ```
 
 ### Для деплоя на сервере можно использовать Docker
-`Dockerfile`
+[`Dockerfile`](Dockerfile)
 
