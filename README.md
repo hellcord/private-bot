@@ -2,13 +2,31 @@
 
 Простенький бот для приваток на сервере [HellCord](https://discord.gg/hellcord)
 
-### Установка и запуск
+### Зависимости
 ```bash
-make dev
+bun install
 ```
 
-### Сборка
+### Запуск (Dev)
 
 ```bash
-make build
+bun dev
 ```
+
+### Запуск (Prod)
+
+```bash
+bun start
+```
+
+### Обязательно отредачить 
+`config.ts` - там все с коментариями
+
+### И создать .env файлик, где будет
+```sh
+DISCORD_TOKEN=YOU_BOT_TOKEN
+```
+
+### Для деплоя на сервере можно использовать Docker
+`Dockerfile`
+
