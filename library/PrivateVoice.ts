@@ -23,7 +23,8 @@ export class PrivateVoice {
     public group: PrivateGroup,
     public voice: VoiceChannel,
     public ownerId: string,
-    public deleteTimeout: number
+    public deleteTimeout: number,
+    public blocks: string[] = []
   ) { }
 
   delete(ignore = false) {
@@ -43,7 +44,20 @@ export class PrivateVoice {
       region: this.voice.rtcRegion,
       nsfw: this.voice.nsfw,
       video: this.voice.videoQualityMode,
+      blocks: this.blocks
     };
+  }
+
+  ban(id: string) {
+    const index = this.blocks.indexOf(id);
+    if (index === -1)
+      this.blocks.push(id);
+  }
+
+  unban(id: string) {
+    const index = this.blocks.indexOf(id);
+    if (index !== -1)
+      this.blocks.splice(index, 1);
   }
 
   async loop() {
