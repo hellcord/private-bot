@@ -1,7 +1,7 @@
 import { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateCommands } from "./PrivateCommands";
 import { configStore, type PrivateGroup } from "./PrivateGroup";
-import { EmbedBuilder, GuildMember, Message, type VoiceChannel } from "discord.js";
+import { EmbedBuilder, GuildMember, Message, type OverwriteData, type VoiceChannel } from "discord.js";
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
 
@@ -105,10 +105,7 @@ export class PrivateVoice {
 
   async unblockall() {
     await this.voice.permissionOverwrites.set([
-      {
-        id: this.ownerId,
-        allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
-      },
+      ...PrivateVoice.getDefaultPermissions(this.ownerId, [])
     ]);
   }
 
@@ -148,5 +145,20 @@ export class PrivateVoice {
     if (timeout > this.deleteTimeout) {
       this.delete();
     }
+  }
+
+  static getDefaultPermissions(ownerId: string, blocks: string[] = []): OverwriteData[] {
+    return [
+      {
+        id: ownerId,
+        allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
+      },
+      ...blocks.map(
+        id => ({
+          id,
+          deny: ['Connect', 'SendMessages']
+        } as OverwriteData)
+      )
+    ];
   }
 }

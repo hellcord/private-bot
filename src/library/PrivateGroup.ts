@@ -48,7 +48,7 @@ export class PrivateGroup {
 
         let channel = [...this.voices].find(e => e.ownerId === member.id)?.voice ?? await (
           async () => {
-            const channel = await this.root.guild.channels.create({
+            return await this.root.guild.channels.create({
               name: config?.name ?? member.displayName ?? member.user.displayName,
               bitrate: config?.bitrate ?? undefined,
               rtcRegion: config?.region ?? undefined,
@@ -57,22 +57,8 @@ export class PrivateGroup {
               videoQualityMode: config?.video ?? undefined,
               parent: this.root,
               type: ChannelType.GuildVoice,
-              permissionOverwrites: [
-                {
-                  id: member.id,
-                  allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
-                },
-                ...blocks.map(
-                  id => ({
-                    id,
-                    deny: ['Connect', 'SendMessages']
-                  } as OverwriteData)
-                )
-              ]
+              permissionOverwrites: PrivateVoice.getDefaultPermissions(member.id, blocks)
             });
-
-
-            return channel;
           }
         )();
         if (member.voice.channel)
