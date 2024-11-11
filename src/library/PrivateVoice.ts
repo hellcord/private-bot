@@ -95,11 +95,21 @@ export class PrivateVoice {
     if (user.voice.channel === this.voice)
       await user.voice.disconnect();
   }
+
   async unblock(user: GuildMember | string) {
     await this.voice.permissionOverwrites.edit(user, {
       Connect: null,
       SendMessages: null
     });
+  }
+
+  async unblockall() {
+    await this.voice.permissionOverwrites.set([
+      {
+        id: this.ownerId,
+        allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
+      },
+    ]);
   }
 
   async welcomeMessage() {

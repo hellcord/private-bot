@@ -63,11 +63,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
   revokeall: {
     title: 'Разблокировать всех пользователей.',
     async exec(voice) {
-      const blockUsers = voice.getBlockUsersIds();
-      blockUsers.forEach(id => voice.unban(id));
-      for (const id of blockUsers) {
-        await voice.unblock(id);
-      }
+      voice.blocks.splice(0);
+      await voice.unblockall();
       return 'Все пользователи разблокированы.';
     }
   }
