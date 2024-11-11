@@ -1,10 +1,10 @@
 {
   "name": "discord-bot",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run --watch index.ts",
-    "start": "bun index.ts"
+    "dev": "bun run --watch .",
+    "start": "bun ."
   },
   "devDependencies": {
     "@types/bun": "latest",

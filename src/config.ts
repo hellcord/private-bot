@@ -6,6 +6,16 @@ interface IPrivate {
 }
 
 export const PRIVATES: IPrivate[] = [
+  // Тестовый сервак
+  {
+    guildId: '1305286266560184360',
+    categoryId: '1305286267772211382',
+    createVoiceIds: [
+      '1305286267772211384'
+    ],
+    deleteTimeout: 1500
+  },
+  // Боевой сервак
   {
     guildId: '805944675188867112',
     categoryId: '1276593846419197962',
@@ -13,5 +23,5 @@ export const PRIVATES: IPrivate[] = [
       '1304447989607174196'
     ],
     deleteTimeout: 1500
-  }
+  },
 ];
