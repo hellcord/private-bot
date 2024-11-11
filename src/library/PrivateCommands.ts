@@ -65,13 +65,9 @@ export const PrivateCommands: { [key: string]: Command; } = {
     async exec(voice) {
       const blockUsers = voice.getBlockUsersIds();
       blockUsers.forEach(id => voice.unban(id));
-      await voice.voice.permissionOverwrites.set(
-        blockUsers.map(id => ({
-          id: id,
-          allow: [],
-          deny: []
-        }))
-      );
+      for (const id of blockUsers) {
+        await voice.unblock(id);
+      }
       return 'Все пользователи разблокированы.';
     }
   }
