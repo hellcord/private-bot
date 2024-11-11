@@ -50,13 +50,12 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Вывести список пользователей в блокировке.',
     async exec(voice) {
       const blockUsers = voice.getBlockUsersIds()
-        .map(id => `- <@${id}> ${voice.blocks.includes(id) ? '(перм)' : ''}`)
-        .join('\n');
+        .map(id => `- <@${id}> ${voice.blocks.includes(id) ? '(перм)' : ''}`);
 
       if (!blockUsers.length)
         return 'Список заблокированных людей пуст.';
 
-      const limitBlockUsers = blockUsers.slice(0, 10);
+      const limitBlockUsers = blockUsers.slice(0, 10).join('\n');
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
