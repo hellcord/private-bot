@@ -55,7 +55,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
       if (!blockUsers.length)
         return 'Список заблокированных людей пуст.';
 
-      const limitBlockUsers = blockUsers.slice(0, 1);
+      const limitBlockUsers = blockUsers.slice(0, 10);
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
