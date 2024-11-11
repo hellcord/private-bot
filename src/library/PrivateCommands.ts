@@ -59,6 +59,21 @@ export const PrivateCommands: { [key: string]: Command; } = {
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
+  },
+  revokeall: {
+    title: 'Разблокировать всех пользователей.',
+    async exec(voice) {
+      const blockUsers = voice.getBlockUsersIds();
+      blockUsers.forEach(id => voice.unban(id));
+      await voice.voice.permissionOverwrites.set(
+        blockUsers.map(id => ({
+          id: id,
+          allow: [],
+          deny: []
+        }))
+      );
+      return 'Все пользователи разблокированы.';
+    }
   }
 }
 
