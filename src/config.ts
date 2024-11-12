@@ -2,7 +2,7 @@ interface IPrivate {
   guildId: string; // ID сервера
   categoryId: string; // ID категории с приватками
   createVoiceIds: string[]; // ID каналов, откуда создавать приватку
-  deleteTimeout: 1500; // Количество миллисекунд перед удалением канала
+  deleteTimeout: number; // Количество миллисекунд перед удалением канала
 }
 
 export const PRIVATES: IPrivate[] = [
@@ -22,6 +22,6 @@ export const PRIVATES: IPrivate[] = [
     createVoiceIds: [
       '1304447989607174196'
     ],
-    deleteTimeout: 1500
+    deleteTimeout: 500
   },
 ];
