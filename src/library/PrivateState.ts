@@ -30,7 +30,8 @@ export class PrivateState {
       const group = new PrivateGroup(
         root,
         create,
-        config.deleteTimeout
+        config.deleteTimeout,
+        config.multyChannel
       );
 
       this.groups.add(group);
