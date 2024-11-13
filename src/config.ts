@@ -3,6 +3,7 @@ interface IPrivate {
   categoryId: string; // ID категории с приватками
   createVoiceIds: string[]; // ID каналов, откуда создавать приватку
   deleteTimeout: number; // Количество миллисекунд перед удалением канала
+  multyChannel?: boolean; // Возможность создать одному человеку более одной комнаты
 }
 
 export const PRIVATES: IPrivate[] = [
@@ -22,6 +23,7 @@ export const PRIVATES: IPrivate[] = [
     createVoiceIds: [
       '1304447989607174196'
     ],
-    deleteTimeout: 500
+    deleteTimeout: 500,
+    multyChannel: true,
   },
 ];

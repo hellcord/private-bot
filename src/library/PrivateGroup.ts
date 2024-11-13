@@ -14,7 +14,8 @@ export class PrivateGroup {
   constructor(
     public root: CategoryChannel,
     public create: VoiceChannel[],
-    public deleteTimeout: number,
+    public deleteTimeout = 500,
+    public multyChannel = false,
   ) { }
 
   addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks: string[] = []) {
@@ -46,7 +47,11 @@ export class PrivateGroup {
         const config = configStore.get(this.getId(member));
         const blocks = config?.blocks ?? [];
 
-        let channel = [...this.voices].find(e => e.ownerId === member.id)?.voice ?? await (
+        const findChannel = this.multyChannel ? null : (
+          [...this.voices].find(e => e.ownerId === member.id)?.voice ?? null
+        );
+
+        const channel = findChannel ?? await (
           async () => {
             return await this.root.guild.channels.create({
               name: config?.name ?? member.displayName ?? member.user.displayName,

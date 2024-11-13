@@ -16,6 +16,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
       const blockUsers = voice.getBlockUsersIds();
       if (blockUsers.includes(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован.`);
+      if (user.permissions.has('MoveMembers'))
+        throw new Error(`Пользователь ${user} не может быть заблокирован.`);
       voice.ban(user.id);
       await voice.block(user);
       return `Пользователь ${user} перманентно заблокирован.`;
@@ -29,6 +31,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
       const blockUsers = voice.getBlockUsersIds();
       if (blockUsers.includes(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован`);
+      if (user.permissions.has('MoveMembers'))
+        throw new Error(`Пользователь ${user} не может быть заблокирован.`);
       await voice.block(user);
       return `Пользователь ${user} заблокирован до пересоздания.`;
     }
@@ -46,6 +50,14 @@ export const PrivateCommands: { [key: string]: Command; } = {
       return `Пользователь ${user} полностью разблокирован.`;
     }
   },
+  revokeall: {
+    title: 'Разблокировать всех пользователей.',
+    async exec(voice) {
+      voice.blocks.splice(0);
+      await voice.unblockall();
+      return 'Все пользователи разблокированы.';
+    }
+  },
   list: {
     title: 'Вывести список пользователей в блокировке.',
     async exec(voice) {
@@ -60,13 +72,5 @@ export const PrivateCommands: { [key: string]: Command; } = {
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
   },
-  revokeall: {
-    title: 'Разблокировать всех пользователей.',
-    async exec(voice) {
-      voice.blocks.splice(0);
-      await voice.unblockall();
-      return 'Все пользователи разблокированы.';
-    }
-  }
 }
 
