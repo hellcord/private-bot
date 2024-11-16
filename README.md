@@ -1,4 +1,4 @@
-# hellcord-private
+# Бот для приваток HellCord
 
 Простенький бот для приваток на сервере [HellCord](https://discord.gg/hellcord).
 Тут наговнокодил следующие штуки:
