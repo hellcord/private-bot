@@ -124,7 +124,6 @@ export class PrivateVoice {
     }).join('\n');
 
     await this.voice.send({
-      content: `<@${this.ownerId}>`,
       embeds: [
         new EmbedBuilder()
           .setTitle("Ваш голосовой канал создан.")
