@@ -29,13 +29,20 @@ export class PrivateVoice {
     public blocks: string[] = []
   ) { }
 
-  delete(ignore = false) {
+  async delete(ignore = false) {
     if (!this.work) return;
     this.work = false;
     this.group.voices.delete(this);
     if (ignore) return;
-    this.voice.delete()
-      .catch(console.log);
+    let attempts = 3;
+    while (attempts--) {
+      try {
+        await this.voice.delete();
+        return;
+      } catch (e) {
+        console.log(e, { attempts });
+      }
+    }
   }
 
   saveConfig() {
@@ -143,7 +150,7 @@ export class PrivateVoice {
     const timeout = performance.now() - this.time;
 
     if (timeout > this.deleteTimeout) {
-      this.delete();
+      await this.delete();
     }
   }
 
