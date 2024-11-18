@@ -62,7 +62,7 @@ export class PrivateGroup {
               videoQualityMode: config?.video ?? undefined,
               parent: this.root,
               type: ChannelType.GuildVoice,
-              permissionOverwrites: PrivateVoice.getDefaultPermissions(member.id, blocks)
+              permissionOverwrites: await PrivateVoice.getDefaultPermissions(member.id, blocks, this.root.guild)
             });
           }
         )();
