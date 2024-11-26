@@ -54,7 +54,7 @@ export class PrivateVoice {
       region: this.voice.rtcRegion,
       nsfw: this.voice.nsfw,
       video: this.voice.videoQualityMode,
-      blocks: this.blocks
+      blocks: [...this.blocks]
     };
   }
 
@@ -163,7 +163,7 @@ export class PrivateVoice {
         allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
       },
       ...blocks
-        .filter(id => !users.has(id))
+        .filter(id => !users.get(id))
         .map(
           id => ({
             id,
