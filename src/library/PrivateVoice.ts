@@ -165,7 +165,7 @@ export class PrivateVoice {
         allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
       },
       ...blocks
-        .filter(id => !users.get(id))
+        .filter(id => !users.has(id))
         .map(
           id => ({
             id,
