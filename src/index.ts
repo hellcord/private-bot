@@ -20,7 +20,10 @@ bot.on('channelDelete', (channel) => {
 
 bot.on('channelUpdate', (_, channel) => {
   if (channel.type !== ChannelType.GuildVoice) return;
-  state.getVoice(channel)?.updateConfig();
+  const voice = state.getVoice(channel);
+  console.log(voice, 'update');
+  voice?.updateConfig();
+
 });
 
 while (true) {
