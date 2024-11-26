@@ -167,7 +167,7 @@ export class PrivateVoice {
         .map(
           id => ({
             id,
-            deny: ['Connect', 'SendMessages']
+            deny: ['Connect', 'SendMessages', 'ViewChannel']
           } as OverwriteData)
         )
     ];
