@@ -157,15 +157,13 @@ export class PrivateVoice {
   static async getDefaultPermissions(ownerId: string, blocks: string[] = [], guild: Guild): Promise<OverwriteData[]> {
     const users = await guild.members.fetch({ user: blocks });
 
-    console.log(users.map(user => user.nickname));
-
     return [
       {
         id: ownerId,
         allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
       },
       ...blocks
-        .filter(id => !users.has(id))
+        .filter(id => users.has(id))
         .map(
           id => ({
             id,
