@@ -47,8 +47,6 @@ export class PrivateGroup {
         const config = configStore.get(this.getId(member));
         const blocks = config?.blocks ?? [];
 
-        console.log(member.user.username, blocks);
-
         const findChannel = this.multyChannel ? null : (
           [...this.voices].find(e => e.ownerId === member.id)?.voice ?? null
         );
