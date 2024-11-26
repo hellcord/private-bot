@@ -41,6 +41,12 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Разблокировать пользователя.',
     args: ['user'],
     async exec(voice, args) {
+      if (args.raw.includes('all')) {
+        voice.blocks.splice(0);
+        await voice.unblockall();
+        return 'Все пользователи разблокированы.';
+      }
+
       const user = await args.user({ notBot: true, notMe: true });
       const blockUsers = voice.getBlockUsersIds();
       if (!blockUsers.includes(user.id))
