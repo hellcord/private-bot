@@ -67,7 +67,7 @@ export class PrivateGroup {
           }
         )();
 
-        if (member.voice.channel)
+        if (member.voice.channel && member.voice.channelId === create.id)
           await member.voice.setChannel(channel);
         const voice = this.addVoice(channel, member, blocks);
         if (!voice.voice.messages.cache.size) await voice.welcomeMessage();
