@@ -1,7 +1,5 @@
 import type { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateVoice } from "./PrivateVoice";
-import { VoiceChannel } from "discord.js";
-import { bot } from "../bot";
 
 export type Command = {
   title: string;
@@ -98,5 +96,11 @@ export const PrivateCommands: { [key: string]: Command; } = {
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
   },
+  help: {
+    title: 'Показать список доступных команд.',
+    async exec(voice) {
+      await voice.welcomeMessage();
+    }
+  }
 }
 
