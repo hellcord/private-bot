@@ -1,6 +1,7 @@
 import type { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateVoice } from "./PrivateVoice";
 import { VoiceChannel } from "discord.js";
+import { bot } from "../bot";
 
 export type Command = {
   title: string;
@@ -78,8 +79,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
         user.displayName,
         voice.voice.guild
       );
-      await channel.permissionOverwrites.set(config.permissionOverwrites);
-      await channel.setName(config.name);
+      await channel.edit(config);
       await voice.updateConfig();
       return `Канал успено передан ${user}.`;
     }
