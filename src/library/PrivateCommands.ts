@@ -81,6 +81,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
       await channel.permissionOverwrites.set(config.permissionOverwrites);
       await channel.setName(config.name);
       await voice.updateConfig();
+      return `Канал успено передан ${user}.`;
     }
   },
   list: {
