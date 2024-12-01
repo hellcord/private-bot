@@ -46,6 +46,8 @@ export class PrivateVoice {
     }
   }
 
+
+
   saveConfig() {
     return {
       name: this.voice.name,
@@ -152,6 +154,21 @@ export class PrivateVoice {
     if (timeout > this.deleteTimeout) {
       await this.delete();
     }
+  }
+
+  static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild) {
+    const config = configStore.get(id);
+    const blocks = config?.blocks ?? [];
+
+    return {
+      name: config?.name ?? defaultName,
+      bitrate: config?.bitrate ?? undefined,
+      rtcRegion: config?.region ?? undefined,
+      userLimit: config?.limit ?? undefined,
+      nsfw: config?.nsfw ?? undefined,
+      videoQualityMode: config?.video ?? undefined,
+      permissionOverwrites: await PrivateVoice.getDefaultPermissions(ownerId, blocks, guild)
+    };
   }
 
   static async getDefaultPermissions(ownerId: string, blocks: string[] = [], guild: Guild): Promise<OverwriteData[]> {

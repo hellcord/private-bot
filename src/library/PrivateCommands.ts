@@ -1,5 +1,6 @@
 import type { ArgumentsParser } from "./ArgumentsParser";
-import type { PrivateVoice } from "./PrivateVoice";
+import { PrivateVoice } from "./PrivateVoice";
+import { VoiceChannel } from "discord.js";
 
 export type Command = {
   title: string;
@@ -59,6 +60,27 @@ export const PrivateCommands: { [key: string]: Command; } = {
       voice.blocks.splice(0);
       await voice.unblockall();
       return 'Все пользователи разблокированы.';
+    }
+  },
+  transfer: {
+    title: 'Передать комнату участнику.',
+    async exec(voice, args) {
+      const user = await args.user({ notBot: true, notMe: true });
+
+      if (user.voice.channelId !== voice.voice.id)
+        throw new Error(`Пользователь ${user} должен находится в комнате.`);
+
+      voice.ownerId = user.id;
+      const channel = voice.voice;
+      const config = await PrivateVoice.getConfig(
+        voice.id,
+        user.id,
+        user.displayName,
+        voice.voice.guild
+      );
+      await channel.permissionOverwrites.set(config.permissionOverwrites);
+      await channel.setName(config.name);
+      await voice.updateConfig();
     }
   },
   list: {

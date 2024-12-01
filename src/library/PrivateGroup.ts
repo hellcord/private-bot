@@ -54,15 +54,14 @@ export class PrivateGroup {
         const channel = findChannel ?? await (
           async () => {
             return await this.root.guild.channels.create({
-              name: config?.name ?? member.displayName ?? member.user.displayName,
-              bitrate: config?.bitrate ?? undefined,
-              rtcRegion: config?.region ?? undefined,
-              userLimit: config?.limit ?? undefined,
-              nsfw: config?.nsfw ?? undefined,
-              videoQualityMode: config?.video ?? undefined,
               parent: this.root,
               type: ChannelType.GuildVoice,
-              permissionOverwrites: await PrivateVoice.getDefaultPermissions(member.id, blocks, this.root.guild)
+              ...await PrivateVoice.getConfig(
+                this.getId(member),
+                member.id,
+                member.displayName,
+                this.root.guild
+              )
             });
           }
         )();
