@@ -177,7 +177,13 @@ export class PrivateVoice {
     return [
       {
         id: ownerId,
-        allow: ['ManageChannels', 'MoveMembers', 'ManageMessages']
+        allow: [
+          'ManageChannels',
+          'MoveMembers',
+          'ManageMessages',
+          'UseEmbeddedActivities',
+          'UseExternalApps'
+        ]
       },
       ...blocks
         .filter(id => users.has(id))
