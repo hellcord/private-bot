@@ -77,6 +77,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
         user.displayName,
         voice.voice.guild
       );
+      voice.blocks = voice.getBlockUsersIds();
       await channel.edit(config);
       await voice.updateConfig();
       return `Канал успено передан ${user}.`;

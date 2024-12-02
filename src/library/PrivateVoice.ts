@@ -46,8 +46,6 @@ export class PrivateVoice {
     }
   }
 
-
-
   saveConfig() {
     return {
       name: this.voice.name,
