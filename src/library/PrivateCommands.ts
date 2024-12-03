@@ -63,6 +63,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   transfer: {
     title: 'Передать комнату участнику.',
+    args: ['user'],
     async exec(voice, args) {
       const user = await args.user({ notBot: true, notMe: true });
 
