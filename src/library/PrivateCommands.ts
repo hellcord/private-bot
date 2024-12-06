@@ -65,23 +65,27 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Передать комнату участнику.',
     args: ['user'],
     async exec(voice, args) {
-      const user = await args.user({ notBot: true, notMe: true });
+      try {
+        const user = await args.user({ notBot: true, notMe: true });
 
-      if (user.voice.channelId !== voice.voice.id)
-        throw new Error(`Пользователь ${user} должен находится в комнате.`);
+        if (user.voice.channelId !== voice.voice.id)
+          throw new Error(`Пользователь ${user} должен находится в комнате.`);
 
-      voice.ownerId = user.id;
-      const channel = voice.voice;
-      const config = await PrivateVoice.getConfig(
-        voice.id,
-        user.id,
-        user.displayName,
-        voice.voice.guild
-      );
-      voice.blocks = voice.getBlockUsersIds();
-      await channel.edit(config);
-      await voice.updateConfig();
-      return `Канал успено передан ${user}.`;
+        voice.ownerId = user.id;
+        const channel = voice.voice;
+        const config = await PrivateVoice.getConfig(
+          voice.id,
+          user.id,
+          user.displayName,
+          voice.voice.guild
+        );
+        voice.blocks = voice.getBlockUsersIds();
+        await channel.edit(config);
+        await voice.updateConfig();
+        return `Канал успено передан ${user}.`;
+      } finally {
+        await voice.welcomeMessage();
+      }
     }
   },
   list: {
