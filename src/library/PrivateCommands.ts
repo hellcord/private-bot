@@ -81,7 +81,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
       voice.blocks = voice.getBlockUsersIds();
       await channel.edit(config);
       await voice.updateConfig();
-      return `Канал успено передан ${user}.`;
+      return `Канал успешно передан ${user}.`;
     }
   },
   list: {
