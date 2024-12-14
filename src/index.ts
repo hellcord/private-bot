@@ -37,7 +37,7 @@ bot.on('channelUpdate', (_, channel) => {
 (async () => {
   while (true) {
     await taskList.shift()?.();
-    await new Promise(resolve => setTimeout(resolve));
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 })();
 
