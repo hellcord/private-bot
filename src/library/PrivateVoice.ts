@@ -160,7 +160,7 @@ export class PrivateVoice {
 
     return {
       name: config?.name ?? defaultName,
-      bitrate: config?.bitrate ?? undefined,
+      // bitrate: config?.bitrate ?? undefined,
       rtcRegion: config?.region ?? undefined,
       userLimit: config?.limit ?? undefined,
       nsfw: config?.nsfw ?? undefined,
