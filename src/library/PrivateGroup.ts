@@ -53,16 +53,26 @@ export class PrivateGroup {
 
         const channel = findChannel ?? await (
           async () => {
-            return await this.root.guild.channels.create({
-              parent: this.root,
-              type: ChannelType.GuildVoice,
-              ...await PrivateVoice.getConfig(
-                this.getId(member),
-                member.id,
-                member.displayName,
-                this.root.guild
-              )
-            });
+            let iterations = 3;
+
+            while (--iterations) {
+              try {
+                return await this.root.guild.channels.create({
+                  parent: this.root,
+                  type: ChannelType.GuildVoice,
+                  ...await PrivateVoice.getConfig(
+                    this.getId(member),
+                    member.id,
+                    member.displayName,
+                    this.root.guild
+                  )
+                });
+              } catch (e) {
+                configStore.removeSync(this.getId(member));
+              }
+            }
+
+            throw new Error('Can not create voice');
           }
         )();
 
