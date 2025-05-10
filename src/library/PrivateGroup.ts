@@ -18,7 +18,7 @@ export class PrivateGroup {
     public multyChannel = false,
   ) { }
 
-  addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks: string[] = []) {
+  addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks = new Set<string>()) {
     const newVoice = new PrivateVoice(
       this,
       voice,
@@ -45,7 +45,7 @@ export class PrivateGroup {
     for (const create of this.create) {
       for (const [, member] of create.members) {
         const config = configStore.get(this.getId(member));
-        const blocks = config?.blocks ?? [];
+        const blocks = new Set(config?.blocks ?? []);
 
         const findChannel = this.multyChannel ? null : (
           [...this.voices].find(e => e.ownerId === member.id)?.voice ?? null
@@ -85,5 +85,11 @@ export class PrivateGroup {
 
     for (const voice of this.voices)
       await voice.loop();
+  }
+
+  checkBlock(member: GuildMember) {
+    this.voices.forEach(voice => {
+      voice.checkBlock(member);
+    });
   }
 }

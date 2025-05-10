@@ -34,6 +34,10 @@ bot.on('channelUpdate', (_, channel) => {
   state.getVoice(channel)?.updateConfig();
 });
 
+bot.on('guildMemberAdd', (member) => {
+  state.checkBlock(member);
+});
+
 (async () => {
   while (true) {
     await taskList.shift()?.();

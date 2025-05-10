@@ -13,8 +13,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
     args: ['user'],
     async exec(voice, args) {
       const user = await args.user({ notBot: true, notMe: true });
-      const blockUsers = voice.getBlockUsersIds();
-      if (blockUsers.includes(user.id))
+      if (voice.blocks.has(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован.`);
       if (user.permissions.has('MoveMembers'))
         throw new Error(`Пользователь ${user} не может быть заблокирован.`);
@@ -28,8 +27,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
     args: ['user'],
     async exec(voice, args) {
       const user = await args.user({ notBot: true, notMe: true });
-      const blockUsers = voice.getBlockUsersIds();
-      if (blockUsers.includes(user.id))
+      if (voice.blocks.has(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован`);
       if (user.permissions.has('MoveMembers'))
         throw new Error(`Пользователь ${user} не может быть заблокирован.`);
@@ -45,8 +43,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
         return PrivateCommands.revokeall.exec(voice, args);
 
       const user = await args.user({ notBot: true, notMe: true });
-      const blockUsers = voice.getBlockUsersIds();
-      if (!blockUsers.includes(user.id))
+      if (!voice.blocks.has(user.id))
         throw new Error(`Пользователь ${user} не был заблокирован.`);
       voice.unban(user.id);
       await voice.unblock(user);
@@ -56,7 +53,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
   revokeall: {
     title: 'Разблокировать всех пользователей.',
     async exec(voice) {
-      voice.blocks.splice(0);
+      voice.blocks.clear();
+      await voice.updateConfig();
       await voice.unblockall();
       return 'Все пользователи разблокированы.';
     }
@@ -78,7 +76,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
         user.displayName,
         voice.voice.guild
       );
-      voice.blocks = voice.getBlockUsersIds();
+      voice.blocks = voice.blocks;
       await channel.edit(config);
       await voice.updateConfig();
       return `Канал успешно передан ${user}.`;
@@ -87,8 +85,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
   list: {
     title: 'Вывести список пользователей в блокировке.',
     async exec(voice) {
-      const blockUsers = voice.getBlockUsersIds()
-        .map(id => `- <@${id}> ${voice.blocks.includes(id) ? '(перм)' : ''}`);
+      const blockUsers = voice.getBlockList()
+        .map(id => `- <@${id}> ${voice.blocks.has(id) ? '(перм)' : ''}`);
 
       if (!blockUsers.length)
         return 'Список заблокированных людей пуст.';

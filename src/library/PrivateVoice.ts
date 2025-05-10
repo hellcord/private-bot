@@ -27,7 +27,7 @@ export class PrivateVoice {
     public voice: VoiceChannel,
     public ownerId: string,
     public deleteTimeout: number,
-    public blocks: string[] = []
+    public blocks = new Set<string>()
   ) { }
 
   async delete(ignore = false) {
@@ -59,15 +59,22 @@ export class PrivateVoice {
   }
 
   ban(id: string) {
-    const index = this.blocks.indexOf(id);
-    if (index === -1)
-      this.blocks.push(id);
+    if (!this.blocks.has(id)) {
+      this.blocks.add(id);
+      this.updateConfig();
+    }
   }
 
   unban(id: string) {
-    const index = this.blocks.indexOf(id);
-    if (index !== -1)
-      this.blocks.splice(index, 1);
+    if (this.blocks.delete(id)) {
+      this.updateConfig();
+    }
+  }
+
+  getBlockList() {
+    return this.voice.permissionOverwrites.cache.filter(user => {
+      return user.deny.has('Connect');
+    }).map(user => user.id);
   }
 
   async runCommand(message: Message) {
@@ -81,18 +88,13 @@ export class PrivateVoice {
     }
   }
 
-  getBlockUsersIds() {
-    return this.voice.permissionOverwrites.cache
-      .filter(perm => {
-        return perm.deny.has('Connect') && perm.deny.has('SendMessages');
-      })
-      .map(perm => {
-        return perm.id;
-      });
-  }
-
   async updateConfig() {
     await configStore.put(this.id, this.saveConfig());
+  }
+
+  async checkBlock(member: GuildMember) {
+    if (!this.blocks.has(member.id)) return;
+    await this.block(member);
   }
 
   async block(user: GuildMember) {
