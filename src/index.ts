@@ -41,13 +41,13 @@ bot.on('guildMemberAdd', (member) => {
 (async () => {
   while (true) {
     await taskList.shift()?.();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 })();
 
 (async () => {
   while (true) {
     await state.loop();
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 })();
