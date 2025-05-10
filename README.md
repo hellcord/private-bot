@@ -15,7 +15,7 @@
 - Доработка функционала блокировки, хочу вклинить временную блокировку.
 
 Для запуска нужно в настройках бота на
-[Developers portal](https://discord.com/developers) включить:
+[https://discord.com/developers](https://discord.com/developers) включить:
 
 - Message Content Ident
 - Guild Members Ident
