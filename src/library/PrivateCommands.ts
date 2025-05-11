@@ -96,6 +96,13 @@ export const PrivateCommands: { [key: string]: Command; } = {
       return `Список заблокированных людей:\n\n${limitBlockUsers}${appendString}`;
     }
   },
+  test: {
+    title: 'Проверка парсинга числа',
+    args: ['number'],
+    exec(_, args) {
+      return `Ваше число: ${args.number({ default: 0 })}. По умолчанию: 0`;
+    }
+  },
   help: {
     title: 'Показать список доступных команд.',
     async exec(voice) {
