@@ -39,6 +39,7 @@ export class ArgumentsParser {
   number(params?: NumberParams) {
     const slice = this.raw.slice(this.cursor);
     const match = /(\d+(\.|,(\d+)))/.exec(slice);
+    console.log(match)
 
     if (!match && params?.default === undefined)
       throw new Error('Неверно указано число');
