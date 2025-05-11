@@ -5,6 +5,11 @@ export type UserParams = {
   notBot?: boolean;
 };
 
+export type NumberParams = {
+  int?: boolean;
+  default?: number;
+};
+
 export class ArgumentsParser {
   cursor = 0;
   raw = '';
@@ -16,7 +21,7 @@ export class ArgumentsParser {
   command() {
     const slice = this.raw.slice(this.cursor);
     const match = /\!(\w+)/.exec(slice);
-    if (!match || !match[1])
+    if (!match)
       throw new Error('Неверно указана команда');
     this.cursor += match.length;
     return match[1];
@@ -29,6 +34,21 @@ export class ArgumentsParser {
       throw new Error('Неверно указан пользователь');
     this.cursor += match.length;
     return match[2] ?? match[3] ?? '';
+  }
+
+  number(params?: NumberParams) {
+    const slice = this.raw.slice(this.cursor);
+    const match = /(\d+(\.|,(\d+)))/.exec(slice);
+
+    if (!match && params?.default !== undefined)
+      throw new Error('Неверно указано число');
+
+    const val = Number(match?.[1] ?? params?.default ?? 0);
+
+    if (params?.int && Math.floor(val) !== val)
+      throw new Error('Число должно быть целочисленным');
+
+    return val;
   }
 
   async user(params?: UserParams) {
