@@ -38,12 +38,12 @@ export class ArgumentsParser {
 
   number(params?: NumberParams) {
     const slice = this.raw.slice(this.cursor);
-    const match = /(\d+(\.|,(\d+))?)/.exec(slice);
+    const match = /(\d+(\.(\d+))?)/.exec(slice);
 
     if (!match && params?.default === undefined)
       throw new Error('Неверно указано число');
 
-    const val = Number(match?.[1] ?? params?.default ?? 0);
+    const val = Number(match?.[0] ?? params?.default ?? 0);
 
     if (params?.int && Math.floor(val) !== val)
       throw new Error('Число должно быть целочисленным');
