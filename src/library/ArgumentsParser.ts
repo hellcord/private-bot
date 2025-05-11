@@ -40,7 +40,7 @@ export class ArgumentsParser {
     const slice = this.raw.slice(this.cursor);
     const match = /(\d+(\.|,(\d+)))/.exec(slice);
 
-    if (!match && params?.default !== undefined)
+    if (!match && params?.default === undefined)
       throw new Error('Неверно указано число');
 
     const val = Number(match?.[1] ?? params?.default ?? 0);
