@@ -25,7 +25,7 @@ export class ArgumentsParser {
   userid() {
     const slice = this.raw.slice(this.cursor);
     const match = /(<@(\d+)>|(\d+))/.exec(slice);
-    if (!match || !match[2])
+    if (!match || (!match[2] && !match[3]))
       throw new Error('Неверно указан пользователь');
     this.cursor += match.length;
     return match[2];
