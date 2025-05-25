@@ -1,8 +1,7 @@
-import { bot } from "../bot";
 import { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateCommands } from "./PrivateCommands";
 import { configStore, type PrivateGroup } from "./PrivateGroup";
-import { EmbedBuilder, Guild, GuildMember, Message, type OverwriteData, type VoiceChannel } from "discord.js";
+import { EmbedBuilder, Guild, GuildMember, Message, type OverwriteData, type PermissionResolvable, type VoiceChannel } from "discord.js";
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
 
@@ -27,8 +26,8 @@ export class PrivateVoice {
     public voice: VoiceChannel,
     public ownerId: string,
     public deleteTimeout: number,
-    public blocks = new Set<string>(),
-    public mutes = new Set<string>()
+    public blocks: Set<string>,
+    public mutes: Set<string>
   ) { }
 
   async delete(ignore = false) {
@@ -176,9 +175,9 @@ export class PrivateVoice {
     };
   }
 
-  static async getDefaultPermissions(ownerId: string, blocks: string[] = [], mutes: string[] = [], guild: Guild): Promise<OverwriteData[]> {
+  static async getDefaultPermissions(ownerId: string, blocks: string[], mutes: string[], guild: Guild): Promise<OverwriteData[]> {
     const users = await guild.members.fetch({ user: blocks });
-
+    console.log(ownerId, blocks, mutes);
     return [
       {
         id: ownerId,
@@ -193,14 +192,14 @@ export class PrivateVoice {
       },
       ...[...new Set([...blocks, ...mutes])]
         .filter(id => users.has(id))
-        .map(
+        .map<OverwriteData>(
           id => ({
             id,
             deny: [
-              ...blocks.includes(id) ? ['Connect', 'SendMessages', 'ViewChannel'] : [],
-              ...mutes.includes(id) ? ['Speak'] : []
+              ...(blocks.includes(id) ? ['Connect', 'SendMessages', 'ViewChannel'] : []) as PermissionResolvable[],
+              ...(mutes.includes(id) ? ['Speak'] : []) as PermissionResolvable[]
             ]
-          } as OverwriteData)
+          })
         )
     ];
   }
