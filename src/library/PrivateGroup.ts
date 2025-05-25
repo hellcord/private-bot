@@ -18,7 +18,7 @@ export class PrivateGroup {
     public multyChannel = false,
   ) { }
 
-  addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks = new Set<string>(), mutes = new Set<string>()) {
+  addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks: Set<string>, mutes: Set<string>) {
     const newVoice = new PrivateVoice(
       this,
       voice,
