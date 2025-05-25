@@ -82,8 +82,10 @@ export class PrivateVoice {
   }
 
   async checkBlock(member: GuildMember) {
-    if (!this.blocks.has(member.id)) return;
-    await this.block(member);
+    if (this.blocks.has(member.id))
+      await this.block(member);
+    if (this.mutes.has(member.id))
+      await this.mute(member);
   }
 
   async block(user: GuildMember) {
