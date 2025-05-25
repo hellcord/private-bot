@@ -63,6 +63,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   mute: {
     title: 'Замьютить пользователя',
+    args: ['user'],
     async exec(voice, args) {
       const user = await args.user({ notBot: true, notMe: true });
       if (voice.mutes.has(user.id))
@@ -77,6 +78,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   unmute: {
     title: 'Размьютить пользователя',
+    args: ['user'],
     async exec(voice, args) {
       if (args.raw.includes('all'))
         return PrivateCommands.unmuteall.exec(voice, args);
