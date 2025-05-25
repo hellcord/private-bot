@@ -87,7 +87,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
         throw new Error(`Пользователь ${user} не был замьючен.`);
       voice.mutes.delete(user.id);
       await voice.updateConfig();
-      await voice.unblock(user);
+      await voice.unmute(user);
       return `Пользователь ${user} размьючен.`;
     }
   },

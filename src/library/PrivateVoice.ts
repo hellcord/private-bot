@@ -176,8 +176,9 @@ export class PrivateVoice {
   }
 
   static async getDefaultPermissions(ownerId: string, blocks: string[], mutes: string[], guild: Guild): Promise<OverwriteData[]> {
-    const users = await guild.members.fetch({ user: blocks });
-    console.log(ownerId, blocks, mutes);
+    const allblocks = [...blocks, ...mutes].filter((e, i, d) => d.indexOf(e) === i);
+    const users = await guild.members.fetch({ user: allblocks });
+
     return [
       {
         id: ownerId,
@@ -190,7 +191,7 @@ export class PrivateVoice {
           'MuteMembers'
         ]
       },
-      ...[...new Set([...blocks, ...mutes])]
+      ...allblocks
         .filter(id => users.has(id))
         .map<OverwriteData>(
           id => ({

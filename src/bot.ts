@@ -12,6 +12,6 @@ export const bot = new Client({
   ]
 });
 
-await bot.login(env.DISCORD_TOKEN);
+bot.login(env.DISCORD_TOKEN);
 await new Promise(resove => bot.on('ready', resove));
 console.log('Bot started');
