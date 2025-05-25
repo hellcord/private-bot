@@ -27,7 +27,8 @@ export class PrivateVoice {
     public voice: VoiceChannel,
     public ownerId: string,
     public deleteTimeout: number,
-    public blocks = new Set<string>()
+    public blocks = new Set<string>(),
+    public mutes = new Set<string>()
   ) { }
 
   async delete(ignore = false) {
@@ -54,21 +55,9 @@ export class PrivateVoice {
       region: this.voice.rtcRegion,
       nsfw: this.voice.nsfw,
       video: this.voice.videoQualityMode,
-      blocks: [...this.blocks]
+      blocks: [...this.blocks],
+      mutes: [...this.mutes]
     };
-  }
-
-  ban(id: string) {
-    if (!this.blocks.has(id)) {
-      this.blocks.add(id);
-      this.updateConfig();
-    }
-  }
-
-  unban(id: string) {
-    if (this.blocks.delete(id)) {
-      this.updateConfig();
-    }
   }
 
   getBlockList() {
@@ -113,7 +102,20 @@ export class PrivateVoice {
     });
   }
 
-  async unblockall() {
+  async mute(user: GuildMember | string) {
+    await this.voice.permissionOverwrites.edit(user, {
+      Speak: false
+    });
+  }
+
+  async unmute(user: GuildMember | string) {
+    await this.voice.permissionOverwrites.edit(user, {
+      Speak: null
+    });
+  }
+
+
+  async reset() {
     await this.voice.permissionOverwrites.set([
       ...await PrivateVoice.getDefaultPermissions(this.ownerId, [], this.voice.guild)
     ]);
