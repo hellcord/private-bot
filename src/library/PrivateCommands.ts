@@ -1,5 +1,6 @@
 import type { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateVoice } from "./PrivateVoice";
+import env from "../env";
 
 export type Command = {
   title: string;
@@ -107,6 +108,44 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Показать список доступных команд.',
     async exec(voice) {
       await voice.welcomeMessage();
+    }
+  },
+  mute: {
+    title: 'Заглушить микрофон пользователя на сервере.',
+    args: ['user'],
+    async exec(voice, args) {
+      const user = await args.user({ notBot: true, notMe: true });
+
+      if (!user.voice.channel)
+        throw new Error(`Пользователь ${user} не находится в голосовом канале.`);
+
+      if (!user.roles.cache.has(env.ALL_MUTED_ROLE))
+        throw new Error(`Пользователь ${user} не имеет роли для заглушения.`);
+
+      if (user.voice.serverMute)
+        throw new Error(`Пользователь ${user} уже заглушен.`);
+
+      await user.voice.setMute(true);
+      return `Микрофон пользователя ${user} заглушен на сервере.`;
+    }
+  },
+  unmute: {
+    title: 'Включить микрофон пользователя на сервере.',
+    args: ['user'],
+    async exec(voice, args) {
+      const user = await args.user({ notBot: true, notMe: true });
+
+      if (!user.voice.channel)
+        throw new Error(`Пользователь ${user} не находится в голосовом канале.`);
+
+      if (!user.roles.cache.has(env.ALL_MUTED_ROLE))
+        throw new Error(`Пользователь ${user} не имеет роли для заглушения.`);
+
+      if (!user.voice.serverMute)
+        throw new Error(`Пользователь ${user} не заглушен.`);
+
+      await user.voice.setMute(false);
+      return `Микрофон пользователя ${user} включен на сервере.`;
     }
   }
 }
