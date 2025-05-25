@@ -187,7 +187,8 @@ export class PrivateVoice {
           'MoveMembers',
           'ManageMessages',
           'UseEmbeddedActivities',
-          'UseExternalApps'
+          'UseExternalApps',
+          'MuteMembers'
         ]
       },
       ...[...new Set([...blocks, ...mutes])]
