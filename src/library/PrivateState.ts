@@ -1,7 +1,6 @@
 import { BaseChannel, CategoryChannel, ChannelType, GuildMember, VoiceChannel, type Client } from "discord.js";
 import { PRIVATES } from "../config";
 import { configStore, PrivateGroup } from "./PrivateGroup";
-import { group } from "console";
 
 export class PrivateState {
   groups = new Set<PrivateGroup>();
@@ -55,13 +54,16 @@ export class PrivateState {
           return perm.allow.has('ManageChannels') && !guild.members.cache.get(id)?.user.bot;
         });
 
+
         if (!ownerPerm)
           continue;
 
         const id = group.getId(ownerPerm.id);
         const config = configStore.get(id);
 
-        group.addVoice(voice, ownerPerm.id, new Set(config?.blocks ?? []));
+        const selfVoice = group.addVoice(voice, ownerPerm.id, new Set(config?.blocks ?? []));
+        selfVoice.reset()
+          .catch(console.error);
       }
     }
 
