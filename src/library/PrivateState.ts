@@ -61,9 +61,8 @@ export class PrivateState {
         const id = group.getId(ownerPerm.id);
         const config = configStore.get(id);
 
-        const selfVoice = group.addVoice(voice, ownerPerm.id, new Set(config?.blocks ?? []));
-        selfVoice.reset()
-          .catch(console.error);
+        group.addVoice(voice, ownerPerm.id, new Set(config?.blocks ?? []));
+
       }
     }
 
