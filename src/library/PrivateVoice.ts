@@ -119,7 +119,7 @@ export class PrivateVoice {
 
   async reset() {
     await this.voice.permissionOverwrites.set([
-      ...await PrivateVoice.getDefaultPermissions(this.ownerId, [], this.voice.guild)
+      ...await PrivateVoice.getDefaultPermissions(this.ownerId, [...this.blocks], [...this.mutes], this.voice.guild)
     ]);
   }
 
@@ -163,6 +163,7 @@ export class PrivateVoice {
   static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild) {
     const config = configStore.get(id);
     const blocks = config?.blocks ?? [];
+    const mutes = config?.mutes ?? [];
 
     return {
       name: config?.name ?? defaultName,
@@ -171,11 +172,11 @@ export class PrivateVoice {
       userLimit: config?.limit ?? undefined,
       nsfw: config?.nsfw ?? undefined,
       videoQualityMode: config?.video ?? undefined,
-      permissionOverwrites: await PrivateVoice.getDefaultPermissions(ownerId, blocks, guild)
+      permissionOverwrites: await PrivateVoice.getDefaultPermissions(ownerId, blocks, mutes, guild)
     };
   }
 
-  static async getDefaultPermissions(ownerId: string, blocks: string[] = [], guild: Guild): Promise<OverwriteData[]> {
+  static async getDefaultPermissions(ownerId: string, blocks: string[] = [], mutes: string[] = [], guild: Guild): Promise<OverwriteData[]> {
     const users = await guild.members.fetch({ user: blocks });
 
     return [
@@ -189,12 +190,15 @@ export class PrivateVoice {
           'UseExternalApps'
         ]
       },
-      ...blocks
+      ...[...new Set([...blocks, ...mutes])]
         .filter(id => users.has(id))
         .map(
           id => ({
             id,
-            deny: ['Connect', 'SendMessages', 'ViewChannel']
+            deny: [
+              ...blocks.includes(id) ? ['Connect', 'SendMessages', 'ViewChannel'] : [],
+              ...mutes.includes(id) ? ['Speak'] : []
+            ]
           } as OverwriteData)
         )
     ];
