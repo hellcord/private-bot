@@ -18,9 +18,19 @@ bot.on('messageCreate', asyncTask(
     if (!message.guild) return;
     if (message.channel.type !== ChannelType.GuildVoice) return;
     if (!message.content.startsWith('!')) return;
+    const channel = message.channel;
     const voice = state.getVoice(message.channel);
-    if (!voice || voice.ownerId !== message.author.id) return;
-    await voice.runCommand(message);
+    const member = message.guild.members.cache.get(message.author.id);
+    if (!voice || !member) return;
+    const isOwner = voice.ownerId === message.author.id;
+    const permissions = channel.permissionsFor(member);
+    if (
+      true &&
+      !isOwner &&
+      !permissions.has('MuteMembers') &&
+      !permissions.has('MoveMembers')
+    ) return;
+    await voice.runCommand(message, isOwner);
   }
 ));
 

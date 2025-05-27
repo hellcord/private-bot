@@ -4,6 +4,7 @@ import { PrivateVoice } from "./PrivateVoice";
 export type Command = {
   title: string;
   args?: string[];
+  forModerator?: boolean;
   exec: (voice: PrivateVoice, args: ArgumentsParser) => void | string | Promise<void | string>;
 };
 
@@ -103,8 +104,12 @@ export const PrivateCommands: { [key: string]: Command; } = {
   transfer: {
     title: 'Передать комнату участнику.',
     args: ['user'],
+    forModerator: true,
     async exec(voice, args) {
-      const user = await args.user({ notBot: true, notMe: true });
+      const user = await args.user({ notBot: true });
+
+      if (user.id === voice.ownerId)
+        throw new Error(`Пользователь ${user} уже является владельцем канала.`);
 
       if (user.voice.channelId !== voice.voice.id)
         throw new Error(`Пользователь ${user} должен находится в комнате.`);
@@ -125,6 +130,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   list: {
     title: 'Вывести список пользователей в блокировке.',
+    forModerator: true,
     async exec(voice) {
       const block = new Set(voice.getBlockList());
       const state = (id: string) => {
@@ -148,6 +154,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   help: {
     title: 'Показать список доступных команд.',
+    forModerator: true,
     async exec(voice) {
       await voice.welcomeMessage();
     }

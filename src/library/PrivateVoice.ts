@@ -65,11 +65,15 @@ export class PrivateVoice {
     }).map(user => user.id);
   }
 
-  async runCommand(message: Message) {
+  async runCommand(message: Message, owner: boolean) {
     const parser = new ArgumentsParser(message);
     const command = parser.command();
     try {
-      const content = await PrivateCommands[command]?.exec(this, parser);
+      const cmd = PrivateCommands[command];
+      if (!owner && !cmd?.forModerator)
+        throw new Error('Эта команда только для владельцев канала');
+
+      const content = await cmd?.exec(this, parser);
       if (content) await message.reply(content);
     } catch (e) {
       await message.reply(`Error: ${e instanceof Error ? e.message : `${e}`}`);
@@ -125,7 +129,9 @@ export class PrivateVoice {
   async welcomeMessage() {
     const commands = Object.keys(PrivateCommands).map(key => {
       const cmd = PrivateCommands[key];
-      return `- \`!${key}${cmd.args?.map(e => ` [${e}]`).join('') ?? ''}\` - ${cmd.title}`;
+      const a = cmd.args?.map(e => ` [${e}]`).join('') ?? '';
+      const m = cmd.forModerator ? ' 💥' : '';
+      return `- \`!${key}${a}\`${m} - ${cmd.title}`;
     }).join('\n');
 
     await this.voice.send({
