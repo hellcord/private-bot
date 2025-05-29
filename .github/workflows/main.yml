@@ -20,4 +20,4 @@ jobs:
           script: |
             cd /root/Projects/private-bot
             git pull
-            m2 restart private
+            pm2 restart private
