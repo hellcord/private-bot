@@ -15,14 +15,13 @@ function asyncTask<T extends any[]>(func: (...args: T) => Promise<void>) {
 
 bot.on('messageCreate', asyncTask(
   async (message) => {
-    if (!message.guild) return;
-    if (message.channel.type !== ChannelType.GuildVoice) return;
-    if (!message.content.startsWith('!')) return;
-    const channel = message.channel;
-    const voice = state.getVoice(message.channel);
-    const member = message.guild.members.cache.get(message.author.id);
+    const { guild, channel, member, content } = message;
+    if (!guild) return;
+    if (channel.type !== ChannelType.GuildVoice) return;
+    if (!content.startsWith('!')) return;
+    const voice = state.getVoice(channel);
     if (!voice || !member) return;
-    const isOwner = voice.ownerId === message.author.id;
+    const isOwner = voice.ownerId === member.id;
     const permissions = channel.permissionsFor(member);
     if (
       true &&

@@ -70,7 +70,10 @@ export class PrivateVoice {
     const command = parser.command();
     try {
       const cmd = PrivateCommands[command];
-      if (!owner && !cmd?.forModerator)
+      if (!cmd)
+        throw new Error(`Введенная команда не существует`);
+
+      if (!owner && !cmd.forModerator)
         throw new Error('Эта команда только для владельцев канала');
 
       const content = await cmd?.exec(this, parser);
