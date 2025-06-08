@@ -152,6 +152,13 @@ export const PrivateCommands: { [key: string]: Command; } = {
       return `Список блокировок:\n\n${limitBlockUsers}${appendString}`;
     }
   },
+  random: {
+    title: 'Рандомный пользователь в войсе',
+    forModerator: true,
+    async exec(voice) {
+      return `Случайно выбран ${voice.voice.members.random()}`;
+    }
+  },
   help: {
     title: 'Показать список доступных команд.',
     forModerator: true,
