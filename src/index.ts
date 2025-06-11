@@ -53,21 +53,15 @@ bot.on('guildMemberAdd', (member) => {
     if (!taskList.length)
       await new Promise(resolve => setTimeout(resolve, 10));
 
-    try {
-      await taskList.shift()?.();
-    } catch (e) {
-      console.error(e);
-    }
+    await Promise.resolve()
+      .then(() => taskList.shift()?.())
+      .catch(console.error);
   }
 })();
 
 (async () => {
   while (true) {
-    try {
-      await state.loop();
-      await new Promise(resolve => setTimeout(resolve, 10));
-    } catch (e) {
-      console.error(e);
-    }
+    await state.loop();
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 })();
