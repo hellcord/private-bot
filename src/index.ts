@@ -31,7 +31,9 @@ bot.on('messageCreate', (message) => {
     !permissions.has('MoveMembers')
   ) return;
 
-  taskList.push(() => voice.runCommand(message, isOwner));
+  taskList.push(
+    voice.runCommand.bind(voice, message, isOwner)
+  );
 });
 
 bot.on('channelDelete', (channel) => {
