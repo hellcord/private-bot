@@ -5,14 +5,6 @@ import { bot } from "./bot";
 const state = new PrivateState(bot);
 const taskList: (() => Promise<any>)[] = [];
 
-function asyncTask<T extends any[]>(func: (...args: T) => Promise<void>) {
-  return (...args: T) => {
-    taskList.push(async () => {
-      await func(...args);
-    });
-  };
-}
-
 bot.on('messageCreate', (message) => {
   const { guild, channel, member, content } = message;
   if (!guild)
@@ -39,7 +31,7 @@ bot.on('messageCreate', (message) => {
     !permissions.has('MoveMembers')
   ) return;
 
-  asyncTask((message) => voice.runCommand(message, isOwner));
+  taskList.push(() => voice.runCommand(message, isOwner));
 });
 
 bot.on('channelDelete', (channel) => {
@@ -58,11 +50,10 @@ bot.on('guildMemberAdd', (member) => {
 
 (async () => {
   while (true) {
-    const task = taskList.shift();
-    if (task)
-      await task();
-    else
+    if (!taskList.length)
       await new Promise(resolve => setTimeout(resolve, 10));
+
+    taskList.shift()?.();
   }
 })();
 
