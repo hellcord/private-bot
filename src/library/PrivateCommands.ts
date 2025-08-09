@@ -106,6 +106,8 @@ export const PrivateCommands: { [key: string]: Command; } = {
     args: ['user'],
     forModerator: true,
     async exec(voice, args) {
+
+      return 'функция временно выключена.';
       const user = await args.user({ notBot: true });
 
       if (user.id === voice.ownerId)
