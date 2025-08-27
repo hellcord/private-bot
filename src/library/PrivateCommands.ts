@@ -158,7 +158,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
 
       const limitBlockUsers = blockUsers.slice(start, start + size).join('\n');
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
-      const pagination = `Страница ${page}  (${start}...${start+limitBlockUsers.length} из ${blockUsers.length}`
+      const pagination = `Страница ${page} из ${Math.ceil(blockUsers.length / size)}`
       const help = `!list [page] - для отображения нужной страницы.`
       return `Список блокировок:\n\n${limitBlockUsers}${appendString}\n\n${pagination}\n${help}`;
     }
