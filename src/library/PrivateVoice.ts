@@ -1,9 +1,11 @@
 import { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateCommands } from "./PrivateCommands";
 import { configStore, type PrivateGroup } from "./PrivateGroup";
-import { EmbedBuilder, Guild, GuildMember, Message, VoiceChannel, type OverwriteData, type PermissionResolvable } from "discord.js";
+import { AuditLogEvent, EmbedBuilder, Guild, GuildMember, Message, VoiceChannel, type OverwriteData, type PermissionResolvable } from "discord.js";
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
+
+const LIMIT = 10 * 60 * 1000
 
 export class PrivateVoice {
   work = true;
@@ -27,6 +29,20 @@ export class PrivateVoice {
   ) { }
 
   async transfer(newOwner: GuildMember) {
+    const logs = await this.voice.guild
+      .fetchAuditLogs({type: AuditLogEvent.ChannelUpdate, limit: 50})
+      
+    for(const [_, entry] of logs.entries) {
+      if(this.voice.id === entry.targetId) {
+        const remaining = Date.now() - +entry.createdAt
+
+        if(remaining < LIMIT) {
+          throw new Error(`Не так быстро. Попробуйте <t:${+entry.createdAt + LIMIT}:R>`)
+        }
+      }
+    }
+    
+    
     const config = await PrivateVoice.getConfig(
       this.group.getId(newOwner),
       newOwner.id,
@@ -103,7 +119,7 @@ export class PrivateVoice {
 
   async updateConfig() {
     const newOwner = PrivateVoice.getOwner(this.voice)
-    
+
     if(newOwner &&  this.ownerId !== newOwner) {
       this.ownerId = newOwner;
       const store = configStore.get(this.id)
