@@ -31,8 +31,6 @@ export class PrivateVoice {
   ) { }
 
   async transfer(newOwner: GuildMember) {
-
-
     const config = await PrivateVoice.getConfig(
       this.group.getId(newOwner),
       newOwner.id,
@@ -41,16 +39,17 @@ export class PrivateVoice {
     )
 
     const timeout = [
-      this.voice.edit(config).then(() => {
-        const store = configStore.get(this.group.getId(newOwner));
-        this.ownerId = newOwner.id;
-        this.blocks = new Set(store?.blocks ?? []);
-        this.mutes = new Set(store?.mutes ?? []);
-      }),
+      this.voice.edit(config),
       new Promise((_, r) => setTimeout(r, 1000, new Error('Попробуйте позже')))
     ]
 
     await Promise.race(timeout)
+      .then(() => {
+        const store = configStore.get(this.group.getId(newOwner));
+        this.ownerId = newOwner.id;
+        this.blocks = new Set(store?.blocks ?? []);
+        this.mutes = new Set(store?.mutes ?? []);
+      })
   }
 
   async delete(ignore = false) {
