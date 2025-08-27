@@ -133,7 +133,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   list: {
     title: 'Вывести список пользователей в блокировке.',
     forModerator: true,
-    async exec(voice) {
+    async exec(voice, args) {
       const block = new Set(voice.getBlockList());
       const state = (id: string) => {
         return [
@@ -141,17 +141,26 @@ export const PrivateCommands: { [key: string]: Command; } = {
           voice.blocks.has(id) ? '❗️' : '',
           voice.mutes.has(id) ? '🔇' : ''
         ].filter(Boolean).join(' ');
-
       };
+
       const blockUsers = [...new Set([...voice.getBlockList(), ...voice.mutes])]
         .map(id => `- <@${id}> ${state(id)}`);
-
+      
       if (!blockUsers.length)
         return 'Список блокировок пуст.';
 
-      const limitBlockUsers = blockUsers.slice(0, 10).join('\n');
+      const page = args.number({int: true, default: 0})
+      const size = 10
+      const start = page * size
+      
+      if(start > blockUsers.length - 1)
+        throw new Error('Данной страницы не существует')
+
+      const limitBlockUsers = blockUsers.slice(start, start + size).join('\n');
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
-      return `Список блокировок:\n\n${limitBlockUsers}${appendString}`;
+      const pagination = `Страница ${page}  (${start}...${start+limitBlockUsers.length} из ${blockUsers.length}`
+      const help = `!list [page] - для отображения нужной страницы.`
+      return `Список блокировок:\n\n${limitBlockUsers}${appendString}\n\n${pagination}\n${help}`;
     }
   },
   random: {
