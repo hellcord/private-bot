@@ -30,6 +30,24 @@ export class PrivateVoice {
     public mutes: Set<string>
   ) { }
 
+  async transfer(newOwner: GuildMember) {
+    this.ownerId = newOwner.id;
+
+    const store = configStore.get(this.id);
+
+    this.blocks = new Set(store?.blocks ?? []);
+    this.mutes = new Set(store?.mutes ?? []);
+
+    const config = await PrivateVoice.getConfig(
+      this.id,
+      this.ownerId,
+      newOwner.displayName,
+      this.voice.guild
+    )
+
+    await this.voice.edit(config)
+  }
+
   async delete(ignore = false) {
     if (!this.work) return;
     this.work = false;

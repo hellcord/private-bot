@@ -106,8 +106,6 @@ export const PrivateCommands: { [key: string]: Command; } = {
     args: ['user'],
     forModerator: true,
     async exec(voice, args) {
-
-      return 'функция временно выключена.';
       const user = await args.user({ notBot: true });
 
       if (user.id === voice.ownerId)
@@ -116,17 +114,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
       if (user.voice.channelId !== voice.voice.id)
         throw new Error(`Пользователь ${user} должен находится в комнате.`);
 
-      voice.ownerId = user.id;
-      const channel = voice.voice;
-      const config = await PrivateVoice.getConfig(
-        voice.id,
-        user.id,
-        user.displayName,
-        voice.voice.guild
-      );
-      voice.blocks = voice.blocks;
-      await channel.edit(config);
-      await voice.updateConfig();
+      await voice.transfer(user)
       return `Канал успешно передан ${user}.`;
     }
   },
