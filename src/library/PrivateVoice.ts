@@ -45,7 +45,9 @@ export class PrivateVoice {
       this.voice.guild
     )
 
+    console.log('Start edit')
     await this.voice.edit(config)
+    console.log('End edit')
   }
 
   async delete(ignore = false) {
