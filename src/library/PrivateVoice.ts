@@ -45,9 +45,12 @@ export class PrivateVoice {
       this.voice.guild
     )
 
-    console.log('Start edit')
-    await this.voice.edit(config)
-    console.log('End edit')
+    const timeout = [
+      this.voice.edit(config),
+      new Promise((_, r) => setTimeout(r, 1000, new Error('Попробуйте позже')))
+    ]
+
+    await Promise.race(timeout)
   }
 
   async delete(ignore = false) {
