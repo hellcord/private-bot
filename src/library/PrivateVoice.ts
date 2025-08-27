@@ -1,7 +1,7 @@
 import { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateCommands } from "./PrivateCommands";
 import { configStore, type PrivateGroup } from "./PrivateGroup";
-import { EmbedBuilder, Guild, GuildMember, Message, type OverwriteData, type PermissionResolvable, type VoiceChannel } from "discord.js";
+import { EmbedBuilder, Guild, GuildMember, Message, VoiceChannel, type OverwriteData, type PermissionResolvable } from "discord.js";
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
 
@@ -11,10 +11,6 @@ export class PrivateVoice {
 
   get id() {
     return this.group.getId(this.ownerId);
-  }
-
-  get owner() {
-    return this.voice.guild.members.cache.get(this.ownerId);
   }
 
   get count() {
@@ -106,6 +102,15 @@ export class PrivateVoice {
   }
 
   async updateConfig() {
+    const newOwner = PrivateVoice.getOwner(this.voice)
+    
+    if(newOwner &&  this.ownerId !== newOwner) {
+      this.ownerId = newOwner;
+      const store = configStore.get(this.id)
+      this.blocks = new Set(store?.blocks ?? [])
+      this.mutes = new Set(store?.mutes ?? [])
+    }
+
     await configStore.put(this.id, this.saveConfig());
   }
 
@@ -188,6 +193,14 @@ export class PrivateVoice {
     if (timeout > this.deleteTimeout) {
       await this.delete();
     }
+  }
+
+  static getOwner(voice: VoiceChannel) {
+    const ownerPerm = voice.permissionOverwrites.cache.find((perm, id) => {
+      return perm.allow.has('ManageChannels') && !voice.guild.members.cache.get(id)?.user.bot;
+    });
+
+    return ownerPerm?.id
   }
 
   static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild) {

@@ -1,4 +1,4 @@
-import { ChannelType } from "discord.js";
+import { ChannelType, VoiceChannel } from "discord.js";
 import { PrivateState } from "./library/PrivateState";
 import { bot } from "./bot";
 
@@ -42,7 +42,6 @@ bot.on('channelDelete', (channel) => {
 });
 
 bot.on('channelUpdate', (_, channel) => {
-  if (channel.type !== ChannelType.GuildVoice) return;
   state.getVoice(channel)?.updateConfig();
 });
 
