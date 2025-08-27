@@ -70,6 +70,7 @@ export class PrivateGroup {
                   )
                 });
               } catch (e) {
+                console.error(e)
                 configStore.removeSync(this.getId(member));
               }
             }
