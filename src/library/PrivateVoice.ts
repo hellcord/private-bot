@@ -31,22 +31,22 @@ export class PrivateVoice {
   ) { }
 
   async transfer(newOwner: GuildMember) {
-    this.ownerId = newOwner.id;
 
-    const store = configStore.get(this.id);
-
-    this.blocks = new Set(store?.blocks ?? []);
-    this.mutes = new Set(store?.mutes ?? []);
 
     const config = await PrivateVoice.getConfig(
-      this.id,
-      this.ownerId,
+      this.group.getId(newOwner),
+      newOwner.id,
       newOwner.displayName,
       this.voice.guild
     )
 
     const timeout = [
-      this.voice.edit(config),
+      this.voice.edit(config).then(() => {
+        const store = configStore.get(this.group.getId(newOwner));
+        this.ownerId = newOwner.id;
+        this.blocks = new Set(store?.blocks ?? []);
+        this.mutes = new Set(store?.mutes ?? []);
+      }),
       new Promise((_, r) => setTimeout(r, 1000, new Error('Попробуйте позже')))
     ]
 
