@@ -132,6 +132,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
   },
   list: {
     title: 'Вывести список пользователей в блокировке.',
+    args: ['page?'],
     forModerator: true,
     async exec(voice, args) {
       const block = new Set(voice.getBlockList());
@@ -149,11 +150,11 @@ export const PrivateCommands: { [key: string]: Command; } = {
       if (!blockUsers.length)
         return 'Список блокировок пуст.';
 
-      const page = args.number({int: true, default: 0})
+      const page = args.number({int: true, default: 1})
       const size = 10
-      const start = page * size
+      const start = (page - 1) * size
       
-      if(start > blockUsers.length - 1)
+      if(start < 0 || start > blockUsers.length - 1)
         throw new Error('Данной страницы не существует')
 
       const limitBlockUsers = blockUsers.slice(start, start + size).join('\n');
