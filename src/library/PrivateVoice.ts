@@ -37,7 +37,7 @@ export class PrivateVoice {
         const remaining = Date.now() - +entry.createdAt
 
         if(remaining < LIMIT) {
-          throw new Error(`Не так быстро. Попробуйте <t:${+entry.createdAt + LIMIT}:R>`)
+          throw new Error(`Не так быстро. Попробуйте <t:${(+entry.createdAt + LIMIT)/ 1000}:R>`)
         }
       }
     }
