@@ -36,9 +36,8 @@ export class ArgumentsParser {
   }
 
   userid() {
-    this.skip();
     const slice = this.raw.slice(this.cursor);
-    const match = /^(<@(\d+)>|(\d+))/.exec(slice);
+    const match = /(<@(\d+)>|(\d+))/.exec(slice);
     if (!match)
       throw new Error('Неверно указан пользователь');
     this.cursor += match.length;
@@ -46,9 +45,8 @@ export class ArgumentsParser {
   }
 
   number(params?: NumberParams) {
-    this.skip();
     const slice = this.raw.slice(this.cursor);
-    const match = /^(\d+(\.(\d+))?)/.exec(slice);
+    const match = /(\d+(\.(\d+))?)/.exec(slice);
 
     if (!match && params?.default === undefined)
       throw new Error('Неверно указано число');
