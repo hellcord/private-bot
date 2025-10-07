@@ -21,8 +21,7 @@ export class ArgumentsParser {
   skip() {
     const slice = this.raw.slice(this.cursor);
     const match = /^\s+/.exec(slice);
-    if (!match)
-      throw new Error('Ошибка парсинга команд');
+    if (!match) return;
     this.cursor += match[0].length;
   }
 
