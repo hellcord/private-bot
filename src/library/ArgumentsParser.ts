@@ -31,22 +31,24 @@ export class ArgumentsParser {
     const match = /^\!(\w+)/.exec(slice);
     if (!match)
       throw new Error('Неверно указана команда');
-    this.cursor += match.length;
+    this.cursor += match[0].length;
     return match[1];
   }
 
   userid() {
+    this.skip();
     const slice = this.raw.slice(this.cursor);
-    const match = /(<@(\d+)>|(\d+))/.exec(slice);
+    const match = /^(<@(\d+)>|(\d+))/.exec(slice);
     if (!match)
       throw new Error('Неверно указан пользователь');
-    this.cursor += match.length;
+    this.cursor += match[0].length;
     return match[2] ?? match[3] ?? '';
   }
 
   number(params?: NumberParams) {
+    this.skip();
     const slice = this.raw.slice(this.cursor);
-    const match = /(\d+(\.(\d+))?)/.exec(slice);
+    const match = /^(\d+(\.(\d+))?)/.exec(slice);
 
     if (!match && params?.default === undefined)
       throw new Error('Неверно указано число');
@@ -56,6 +58,7 @@ export class ArgumentsParser {
     if (params?.int && Math.floor(val) !== val)
       throw new Error('Число должно быть целочисленным');
 
+    this.cursor += match?.[0].length ?? 0;
     return val;
   }
 
