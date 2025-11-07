@@ -25,7 +25,8 @@ export const PRIVATES: IPrivate[] = [
       '1304447989607174196'
     ],
     ignore: [
-      '406466111593250817'
+      '406466111593250817', // koteelok
+      '256496678557712384', // !Українець
     ],
     deleteTimeout: 500,
     multyChannel: true,
