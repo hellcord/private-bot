@@ -5,7 +5,7 @@ import { AuditLogEvent, EmbedBuilder, Guild, GuildMember, Message, VoiceChannel,
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
 
-const LIMIT = 10 * 60 * 1000
+const LIMIT = 10 * 60 * 1000;
 
 export class PrivateVoice {
   work = true;
@@ -30,30 +30,30 @@ export class PrivateVoice {
 
   async transfer(newOwner: GuildMember) {
     const logs = await this.voice.guild
-      .fetchAuditLogs({type: AuditLogEvent.ChannelUpdate, limit: 50})
-      
-    for(const [_, entry] of logs.entries) {
-      if(this.voice.id === entry.targetId) {
-        const remaining = Date.now() - +entry.createdAt
+      .fetchAuditLogs({ type: AuditLogEvent.ChannelUpdate, limit: 50 });
 
-        if(remaining < LIMIT) {
-          throw new Error(`Не так быстро. Попробуйте <t:${(+entry.createdAt + LIMIT)/ 1000 | 0}:R>`)
+    for (const [_, entry] of logs.entries) {
+      if (this.voice.id === entry.targetId) {
+        const remaining = Date.now() - +entry.createdAt;
+
+        if (remaining < LIMIT) {
+          throw new Error(`Не так быстро. Попробуйте <t:${(+entry.createdAt + LIMIT) / 1000 | 0}:R>`);
         }
       }
     }
-    
-    
+
+
     const config = await PrivateVoice.getConfig(
       this.group.getId(newOwner),
       newOwner.id,
       newOwner.displayName,
       this.voice.guild
-    )
+    );
 
     const timeout = [
       this.voice.edit(config),
       new Promise((_, r) => setTimeout(r, 1000, new Error('Попробуйте позже')))
-    ]
+    ];
 
     await Promise.race(timeout)
       .then(() => {
@@ -61,7 +61,7 @@ export class PrivateVoice {
         this.ownerId = newOwner.id;
         this.blocks = new Set(store?.blocks ?? []);
         this.mutes = new Set(store?.mutes ?? []);
-      })
+      });
   }
 
   async delete(ignore = false) {
@@ -100,7 +100,7 @@ export class PrivateVoice {
   }
 
   async runCommand(message: Message, owner: boolean) {
-    const parser = new ArgumentsParser(message);
+    const parser = new ArgumentsParser(message, this);
     const command = parser.command();
     try {
       const cmd = PrivateCommands[command];
@@ -118,13 +118,13 @@ export class PrivateVoice {
   }
 
   async updateConfig() {
-    const newOwner = PrivateVoice.getOwner(this.voice)
+    const newOwner = PrivateVoice.getOwner(this.voice);
 
-    if(newOwner &&  this.ownerId !== newOwner) {
+    if (newOwner && this.ownerId !== newOwner) {
       this.ownerId = newOwner;
-      const store = configStore.get(this.id)
-      this.blocks = new Set(store?.blocks ?? [])
-      this.mutes = new Set(store?.mutes ?? [])
+      const store = configStore.get(this.id);
+      this.blocks = new Set(store?.blocks ?? []);
+      this.mutes = new Set(store?.mutes ?? []);
     }
 
     await configStore.put(this.id, this.saveConfig());
@@ -216,7 +216,7 @@ export class PrivateVoice {
       return perm.allow.has('ManageChannels') && !voice.guild.members.cache.get(id)?.user.bot;
     });
 
-    return ownerPerm?.id
+    return ownerPerm?.id;
   }
 
   static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild) {

@@ -1,8 +1,10 @@
 import type { Message } from "discord.js";
+import type { PrivateVoice } from "./PrivateVoice";
 
 export type UserParams = {
   notMe?: boolean;
   notBot?: boolean;
+  noIgnore?: boolean;
 };
 
 export type NumberParams = {
@@ -14,7 +16,7 @@ export class ArgumentsParser {
   cursor = 0;
   raw = '';
 
-  constructor(public message: Message) {
+  constructor(public message: Message, public voice: PrivateVoice) {
     this.raw = message.content;
   }
 
@@ -68,6 +70,7 @@ export class ArgumentsParser {
     if (!user) throw new Error(`Указанный пользователь не найден.`);
     if (params?.notMe && this.message.author.id === user.id) throw new Error(`Здесь нельзя указать себя`);
     if (params?.notBot && user.user.bot) throw new Error(`Здесь нельзя указать бота`);
+    if (params?.noIgnore && this.voice.group.ignore?.includes(user.id)) throw new Error('Данного пользователя не существует для этой команды!');
     return user;
   }
 }

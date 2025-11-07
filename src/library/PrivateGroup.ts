@@ -16,6 +16,7 @@ export class PrivateGroup {
     public create: VoiceChannel[],
     public deleteTimeout = 500,
     public multyChannel = false,
+    public ignore?: string[]
   ) { }
 
   addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks: Set<string>, mutes: Set<string>) {
@@ -70,7 +71,7 @@ export class PrivateGroup {
                   )
                 });
               } catch (e) {
-                console.error(e)
+                console.error(e);
                 configStore.removeSync(this.getId(member));
               }
             }

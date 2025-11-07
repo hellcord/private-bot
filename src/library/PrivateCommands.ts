@@ -13,7 +13,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Перманентная блокировка пользователя.',
     args: ['user'],
     async exec(voice, args) {
-      const user = await args.user({ notBot: true, notMe: true });
+      const user = await args.user({ notBot: true, notMe: true, noIgnore: true });
       if (voice.blocks.has(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован.`);
       if (user.permissions.has('MoveMembers'))
@@ -28,7 +28,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Блокировка пользователя до пересоздания комнаты.',
     args: ['user'],
     async exec(voice, args) {
-      const user = await args.user({ notBot: true, notMe: true });
+      const user = await args.user({ notBot: true, notMe: true, noIgnore: true });
       if (voice.blocks.has(user.id))
         throw new Error(`Пользователь ${user} уже заблокирован`);
       if (user.permissions.has('MoveMembers'))
@@ -66,7 +66,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
     title: 'Замьютить пользователя',
     args: ['user'],
     async exec(voice, args) {
-      const user = await args.user({ notBot: true, notMe: true });
+      const user = await args.user({ notBot: true, notMe: true, noIgnore: true });
       if (voice.mutes.has(user.id))
         throw new Error(`Пользователь ${user} уже замьючен.`);
       if (user.permissions.has('MuteMembers'))
@@ -114,7 +114,7 @@ export const PrivateCommands: { [key: string]: Command; } = {
       if (user.voice.channelId !== voice.voice.id)
         throw new Error(`Пользователь ${user} должен находится в комнате.`);
 
-      await voice.transfer(user)
+      await voice.transfer(user);
       return `Канал успешно передан ${user}.`;
     }
   },
@@ -134,21 +134,21 @@ export const PrivateCommands: { [key: string]: Command; } = {
 
       const blockUsers = [...new Set([...voice.getBlockList(), ...voice.mutes])]
         .map(id => `- <@${id}> ${state(id)}`);
-      
+
       if (!blockUsers.length)
         return 'Список блокировок пуст.';
 
-      const page = args.number({int: true, default: 1})
-      const size = 10
-      const start = (page - 1) * size
-      
-      if(start < 0 || start > blockUsers.length - 1)
-        throw new Error('Данной страницы не существует')
+      const page = args.number({ int: true, default: 1 });
+      const size = 10;
+      const start = (page - 1) * size;
+
+      if (start < 0 || start > blockUsers.length - 1)
+        throw new Error('Данной страницы не существует');
 
       const limitBlockUsers = blockUsers.slice(start, start + size).join('\n');
       const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
-      const pagination = `Страница ${page} из ${Math.ceil(blockUsers.length / size)}`
-      const help = `!list [page] - для отображения нужной страницы.`
+      const pagination = `Страница ${page} из ${Math.ceil(blockUsers.length / size)}`;
+      const help = `!list [page] - для отображения нужной страницы.`;
       return `Список блокировок:\n\n${limitBlockUsers}${appendString}\n\n${pagination}\n${help}`;
     }
   },

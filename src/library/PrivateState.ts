@@ -31,7 +31,8 @@ export class PrivateState {
         root,
         create,
         config.deleteTimeout,
-        config.multyChannel
+        config.multyChannel,
+        config.ignore
       );
 
       this.groups.add(group);
