@@ -27,7 +27,6 @@ export const PRIVATES: IPrivate[] = [
     ignore: [
       '406466111593250817', // koteelok
       '256496678557712384', // !Українець
-      '517984693447163915', // Вечно Накуреный
     ],
     deleteTimeout: 500,
     multyChannel: true,
