@@ -24,10 +24,7 @@ export const PRIVATES: IPrivate[] = [
     createVoiceIds: [
       '1304447989607174196'
     ],
-    ignore: [
-      '406466111593250817', // koteelok
-      '256496678557712384', // !Українець
-    ],
+    ignore: [],
     deleteTimeout: 500,
     multyChannel: true,
   },
