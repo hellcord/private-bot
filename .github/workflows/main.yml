@@ -20,4 +20,5 @@ jobs:
           script: |
             cd /root/Projects/private-bot
             git pull
+            bun install --frozen-lockfile
             pm2 restart private

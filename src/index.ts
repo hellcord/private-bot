@@ -25,7 +25,6 @@ bot.on('messageCreate', (message) => {
   const permissions = channel.permissionsFor(member);
 
   if (
-    true &&
     !isOwner &&
     !permissions.has('MuteMembers') &&
     !permissions.has('MoveMembers')
@@ -62,7 +61,7 @@ bot.on('guildMemberAdd', (member) => {
 
 (async () => {
   while (true) {
-    await state.loop();
+    await state.loop().catch(console.error);
     await new Promise(resolve => setTimeout(resolve, 10));
   }
 })();

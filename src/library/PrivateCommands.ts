@@ -95,9 +95,12 @@ export const PrivateCommands: { [key: string]: Command; } = {
   unmuteall: {
     title: 'Размьютить всех пользователей',
     async exec(voice) {
+      // Не через reset(), чтобы не снимать временные блокировки
+      const mutes = [...voice.mutes];
       voice.mutes.clear();
       await voice.updateConfig();
-      await voice.reset();
+      for (const id of mutes)
+        await voice.unmute(id);
       return 'Все пользователи были размьючены.';
     }
   },
@@ -146,10 +149,9 @@ export const PrivateCommands: { [key: string]: Command; } = {
         throw new Error('Данной страницы не существует');
 
       const limitBlockUsers = blockUsers.slice(start, start + size).join('\n');
-      const appendString = limitBlockUsers.length < blockUsers.length ? `\n\nИ еще ${blockUsers.length - limitBlockUsers.length}` : '';
       const pagination = `Страница ${page} из ${Math.ceil(blockUsers.length / size)}`;
       const help = `!list [page] - для отображения нужной страницы.`;
-      return `Список блокировок:\n\n${limitBlockUsers}${appendString}\n\n${pagination}\n${help}`;
+      return `Список блокировок:\n\n${limitBlockUsers}\n\n${pagination}\n${help}`;
     }
   },
   random: {

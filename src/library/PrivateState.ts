@@ -1,6 +1,7 @@
 import { BaseChannel, CategoryChannel, ChannelType, GuildMember, VoiceChannel, type Client } from "discord.js";
 import { PRIVATES } from "../config";
 import { configStore, PrivateGroup } from "./PrivateGroup";
+import { PrivateVoice } from "./PrivateVoice";
 
 export class PrivateState {
   groups = new Set<PrivateGroup>();
@@ -51,18 +52,14 @@ export class PrivateState {
         if (!(voice instanceof VoiceChannel))
           continue;
 
-        const ownerPerm = voice.permissionOverwrites.cache.find((perm, id) => {
-          return perm.allow.has('ManageChannels') && !guild.members.cache.get(id)?.user.bot;
-        });
+        const ownerId = PrivateVoice.getOwner(voice);
 
-
-        if (!ownerPerm)
+        if (!ownerId)
           continue;
 
-        const id = group.getId(ownerPerm.id);
-        const config = configStore.get(id);
+        const config = configStore.get(group.getId(ownerId));
 
-        group.addVoice(voice, ownerPerm.id, new Set(config?.blocks ?? []), new Set(config?.mutes ?? []));
+        group.addVoice(voice, ownerId, new Set(config?.blocks ?? []), new Set(config?.mutes ?? []));
 
       }
     }

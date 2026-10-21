@@ -1,7 +1,7 @@
 import { ArgumentsParser } from "./ArgumentsParser";
 import { PrivateCommands } from "./PrivateCommands";
 import { configStore, type PrivateGroup } from "./PrivateGroup";
-import { AuditLogEvent, EmbedBuilder, Guild, GuildMember, Message, VoiceChannel, type OverwriteData, type PermissionResolvable } from "discord.js";
+import { AuditLogEvent, EmbedBuilder, Guild, GuildMember, Message, OverwriteType, VoiceChannel, type OverwriteData, type PermissionResolvable } from "discord.js";
 
 export type VoiceConfig = ReturnType<PrivateVoice['saveConfig']>;
 
@@ -95,7 +95,7 @@ export class PrivateVoice {
 
   getBlockList() {
     return this.voice.permissionOverwrites.cache.filter(user => {
-      return user.deny.has('Connect');
+      return user.type === OverwriteType.Member && user.deny.has('Connect');
     }).map(user => user.id);
   }
 
@@ -140,7 +140,8 @@ export class PrivateVoice {
   async block(user: GuildMember) {
     await this.voice.permissionOverwrites.edit(user, {
       Connect: false,
-      SendMessages: false
+      SendMessages: false,
+      ViewChannel: false
     });
     if (user.voice.channel === this.voice)
       await user.voice.disconnect();
@@ -149,7 +150,8 @@ export class PrivateVoice {
   async unblock(user: GuildMember | string) {
     await this.voice.permissionOverwrites.edit(user, {
       Connect: null,
-      SendMessages: null
+      SendMessages: null,
+      ViewChannel: null
     });
   }
 
@@ -184,7 +186,7 @@ export class PrivateVoice {
       embeds: [
         new EmbedBuilder()
           .setTitle("Ваш голосовой канал создан.")
-          .setURL("https://github.com/vicimpa/hellcord-private")
+          .setURL("https://github.com/hellcord/private-bot")
           .setDescription(`**Вы можете блокировать неугодных пользователей.**\n\n${commands}`)
           .setColor("#00b0f4")
           .setTimestamp()
@@ -213,16 +215,22 @@ export class PrivateVoice {
 
   static getOwner(voice: VoiceChannel) {
     const ownerPerm = voice.permissionOverwrites.cache.find((perm, id) => {
-      return perm.allow.has('ManageChannels') && !voice.guild.members.cache.get(id)?.user.bot;
+      return (
+        perm.type === OverwriteType.Member &&
+        perm.allow.has('ManageChannels') &&
+        id !== voice.client.user.id &&
+        !voice.guild.members.cache.get(id)?.user.bot
+      );
     });
 
     return ownerPerm?.id;
   }
 
-  static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild) {
-    const config = configStore.get(id);
-    const blocks = config?.blocks ?? [];
-    const mutes = config?.mutes ?? [];
+  static async getConfig(id: string, ownerId: string, defaultName: string, guild: Guild, useSaved = true) {
+    const store = configStore.get(id);
+    const config = useSaved ? store : undefined;
+    const blocks = store?.blocks ?? [];
+    const mutes = store?.mutes ?? [];
 
     return {
       name: config?.name ?? defaultName,

@@ -1,4 +1,4 @@
-import { ChannelType, EmbedBuilder, GuildMember, VoiceChannel, type CategoryChannel, type OverwriteData } from "discord.js";
+import { ChannelType, GuildMember, VoiceChannel, type CategoryChannel } from "discord.js";
 
 import { PrivateVoice, type VoiceConfig } from "./PrivateVoice";
 import { open } from "lmdb";
@@ -43,52 +43,67 @@ export class PrivateGroup {
     ].join(':');
   }
 
+  async createChannel(member: GuildMember) {
+    const attempts = 3;
+
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await this.root.guild.channels.create({
+          parent: this.root,
+          type: ChannelType.GuildVoice,
+          ...await PrivateVoice.getConfig(
+            this.getId(member),
+            member.id,
+            member.displayName,
+            this.root.guild,
+            // Последняя попытка без сохранённых настроек (имя, регион и т.п.),
+            // блокировки и мьюты при этом сохраняются
+            i < attempts - 1
+          )
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    throw new Error('Can not create voice');
+  }
+
+  async moveToChannel(member: GuildMember, create: VoiceChannel) {
+    const existing = this.multyChannel ? undefined : (
+      [...this.voices].find(e => e.ownerId === member.id)
+    );
+
+    if (existing) {
+      if (member.voice.channelId === create.id)
+        await member.voice.setChannel(existing.voice);
+      return;
+    }
+
+    const config = configStore.get(this.getId(member));
+    const channel = await this.createChannel(member);
+    const voice = this.addVoice(
+      channel,
+      member,
+      new Set(config?.blocks ?? []),
+      new Set(config?.mutes ?? [])
+    );
+
+    if (member.voice.channelId === create.id)
+      await member.voice.setChannel(channel);
+    if (!voice.voice.messages.cache.size) await voice.welcomeMessage();
+  }
+
   async loop() {
     for (const create of this.create) {
       for (const [, member] of create.members) {
-        const config = configStore.get(this.getId(member));
-        const blocks = new Set(config?.blocks ?? []);
-        const mutes = new Set(config?.mutes ?? []);
-
-        const findChannel = this.multyChannel ? null : (
-          [...this.voices].find(e => e.ownerId === member.id)?.voice ?? null
-        );
-
-        const channel = findChannel ?? await (
-          async () => {
-            let iterations = 3;
-
-            while (--iterations) {
-              try {
-                return await this.root.guild.channels.create({
-                  parent: this.root,
-                  type: ChannelType.GuildVoice,
-                  ...await PrivateVoice.getConfig(
-                    this.getId(member),
-                    member.id,
-                    member.displayName,
-                    this.root.guild
-                  )
-                });
-              } catch (e) {
-                console.error(e);
-                configStore.removeSync(this.getId(member));
-              }
-            }
-
-            throw new Error('Can not create voice');
-          }
-        )();
-
-        if (member.voice.channel && member.voice.channelId === create.id)
-          await member.voice.setChannel(channel);
-        const voice = this.addVoice(channel, member, blocks, mutes);
-        if (!voice.voice.messages.cache.size) await voice.welcomeMessage();
+        await this.moveToChannel(member, create)
+          .catch(console.error);
       }
     }
 
     for (const voice of this.voices)
-      await voice.loop();
+      await voice.loop().catch(console.error);
   }
 
   checkBlock(member: GuildMember) {
