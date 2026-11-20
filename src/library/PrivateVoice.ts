@@ -10,6 +10,7 @@ const LIMIT = 10 * 60 * 1000;
 export class PrivateVoice {
   work = true;
   time = 0;
+  private nextArchiveAttempt = 0;
 
   get id() {
     return this.group.getId(this.ownerId);
@@ -208,9 +209,18 @@ export class PrivateVoice {
 
     const timeout = performance.now() - this.time;
 
-    if (timeout > this.deleteTimeout) {
+    if (timeout <= this.deleteTimeout) return;
+
+    if (!this.group.trash) {
       await this.delete();
+      return;
     }
+
+    if (performance.now() < this.nextArchiveAttempt) return;
+    this.nextArchiveAttempt = performance.now() + 5000;
+
+    if (await this.group.archiveVoice(this.voice))
+      await this.delete(true);
   }
 
   static getOwner(voice: VoiceChannel) {

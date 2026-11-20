@@ -8,6 +8,12 @@ export const configStore = open<VoiceConfig, string>({
   compression: true
 });
 
+export const trashStore = configStore.openDB<{
+  guildId: string;
+  categoryId: string;
+  expiresAt: number;
+}>({ name: 'trashedVoices' });
+
 export class PrivateGroup {
   voices = new Set<PrivateVoice>();
 
@@ -16,8 +22,36 @@ export class PrivateGroup {
     public create: VoiceChannel[],
     public deleteTimeout = 500,
     public multyChannel = false,
-    public ignore?: string[]
+    public ignore?: string[],
+    public trash?: { categoryId: string; retention: number }
   ) { }
+
+  async archiveVoice(voice: VoiceChannel) {
+    if (!this.trash) return false;
+
+    const { categoryId, retention } = this.trash;
+    const category = this.root.guild.channels.cache.get(categoryId);
+    if (category?.type !== ChannelType.GuildCategory || category.id === this.root.id)
+      throw new Error(`Invalid trash category ${categoryId}`);
+
+    if (voice.parentId === categoryId) return true;
+    if (voice.members.size) return false;
+
+    // Записываем срок до переноса, чтобы он сохранился даже при перезапуске.
+    await trashStore.put(voice.id, {
+      guildId: voice.guild.id,
+      categoryId,
+      expiresAt: Date.now() + retention
+    });
+
+    if (voice.members.size) {
+      await trashStore.remove(voice.id);
+      return false;
+    }
+
+    await voice.setParent(category, { lockPermissions: true });
+    return true;
+  }
 
   addVoice(voice: VoiceChannel, owner: GuildMember | string, blocks: Set<string>, mutes: Set<string>) {
     const newVoice = new PrivateVoice(
