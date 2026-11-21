@@ -5,8 +5,7 @@ interface IPrivate {
   deleteTimeout: number; // Количество миллисекунд перед удалением канала
   multyChannel?: boolean; // Возможность создать одному человеку более одной комнаты
   ignore?: string[]; // Список игнорируемых на выбор пользователей
-  trash?: string; // Категория отстойник для ненужных каналов
-  trashTime?: number; // Количество миллисекунд перед удалением канала из отстойника
+  trash?: string; // ID категории для архива пустых комнат
 }
 
 export const PRIVATES: IPrivate[] = [
@@ -29,7 +28,6 @@ export const PRIVATES: IPrivate[] = [
     ignore: [],
     deleteTimeout: 500,
     multyChannel: true,
-    trash: '1573242320172875827',
-    trashTime: 1000 * 60 * 60 * 24 * 3 // 3 дня
+    trash: '1573242320172875827'
   },
 ];

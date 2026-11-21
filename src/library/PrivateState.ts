@@ -1,11 +1,10 @@
-import { BaseChannel, CategoryChannel, ChannelType, DiscordAPIError, GuildMember, RESTJSONErrorCodes, VoiceChannel, type Client } from "discord.js";
+import { BaseChannel, CategoryChannel, ChannelType, GuildMember, VoiceChannel, type Client } from "discord.js";
 import { PRIVATES } from "../config";
-import { configStore, PrivateGroup, trashStore } from "./PrivateGroup";
+import { configStore, PrivateGroup } from "./PrivateGroup";
 import { PrivateVoice } from "./PrivateVoice";
 
 export class PrivateState {
   groups = new Set<PrivateGroup>();
-  private nextTrashCheck = 0;
 
   constructor(public bot: Client) {
     for (const config of PRIVATES) {
@@ -35,9 +34,7 @@ export class PrivateState {
         config.deleteTimeout,
         config.multyChannel,
         config.ignore,
-        config.trash && config.trashTime !== undefined
-          ? { categoryId: config.trash, retention: config.trashTime }
-          : undefined
+        config.trash
       );
 
       this.groups.add(group);
@@ -75,33 +72,6 @@ export class PrivateState {
   async loop() {
     for (const group of this.groups)
       await group.loop();
-
-    const now = Date.now();
-    if (now < this.nextTrashCheck || !this.bot.isReady()) return;
-    this.nextTrashCheck = now + 5000;
-
-    for (const { key: channelId, value: entry } of [...trashStore.getRange()]) {
-      if (entry.expiresAt > now) continue;
-
-      const guild = this.bot.guilds.cache.get(entry.guildId);
-      if (!guild?.available) continue;
-
-      const channel = guild.channels.cache.get(channelId);
-      if (channel?.type === ChannelType.GuildVoice && channel.parentId === entry.categoryId) {
-        if (channel.members.size) continue;
-
-        try {
-          await channel.delete();
-        } catch (error) {
-          if (!(error instanceof DiscordAPIError) || error.code !== RESTJSONErrorCodes.UnknownChannel) {
-            console.error(error);
-            continue;
-          }
-        }
-      }
-
-      await trashStore.remove(channelId);
-    }
   }
 
   getVoice(channel: BaseChannel) {

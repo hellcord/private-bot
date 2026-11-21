@@ -8,11 +8,7 @@ export const configStore = open<VoiceConfig, string>({
   compression: true
 });
 
-export const trashStore = configStore.openDB<{
-  guildId: string;
-  categoryId: string;
-  expiresAt: number;
-}>({ name: 'trashedVoices' });
+const CATEGORY_CHANNEL_LIMIT = 50;
 
 export class PrivateGroup {
   voices = new Set<PrivateVoice>();
@@ -23,13 +19,13 @@ export class PrivateGroup {
     public deleteTimeout = 500,
     public multyChannel = false,
     public ignore?: string[],
-    public trash?: { categoryId: string; retention: number }
+    public trashCategoryId?: string
   ) { }
 
   async archiveVoice(voice: VoiceChannel) {
-    if (!this.trash) return false;
+    const categoryId = this.trashCategoryId;
+    if (!categoryId || !this.root.guild.available) return false;
 
-    const { categoryId, retention } = this.trash;
     const category = this.root.guild.channels.cache.get(categoryId);
     if (category?.type !== ChannelType.GuildCategory || category.id === this.root.id)
       throw new Error(`Invalid trash category ${categoryId}`);
@@ -37,18 +33,19 @@ export class PrivateGroup {
     if (voice.parentId === categoryId) return true;
     if (voice.members.size) return false;
 
-    // Записываем срок до переноса, чтобы он сохранился даже при перезапуске.
-    await trashStore.put(voice.id, {
-      guildId: voice.guild.id,
-      categoryId,
-      expiresAt: Date.now() + retention
-    });
+    const children = category.children.cache;
+    if (children.size >= CATEGORY_CHANNEL_LIMIT) {
+      let oldest: VoiceChannel | undefined;
+      for (const channel of children.values()) {
+        if (channel.type !== ChannelType.GuildVoice || channel.members.size) continue;
+        if (!oldest || channel.createdTimestamp < oldest.createdTimestamp) oldest = channel;
+      }
 
-    if (voice.members.size) {
-      await trashStore.remove(voice.id);
-      return false;
+      if (!oldest) return false;
+      await oldest.delete();
     }
 
+    if (voice.members.size) return false;
     await voice.setParent(category, { lockPermissions: true });
     return true;
   }

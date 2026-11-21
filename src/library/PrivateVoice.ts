@@ -211,7 +211,7 @@ export class PrivateVoice {
 
     if (timeout <= this.deleteTimeout) return;
 
-    if (!this.group.trash) {
+    if (!this.group.trashCategoryId) {
       await this.delete();
       return;
     }

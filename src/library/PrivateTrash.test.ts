@@ -7,22 +7,19 @@ import { PRIVATES } from '../config';
 
 const directory = mkdtempSync(join(tmpdir(), 'private-bot-trash-test-'));
 const previousDirectory = process.cwd();
-let groupLibrary: typeof import('./PrivateGroup');
 let stateLibrary: typeof import('./PrivateState');
 try {
   process.chdir(directory);
-  groupLibrary = await import('./PrivateGroup');
   stateLibrary = await import('./PrivateState');
 } finally {
   process.chdir(previousDirectory);
 }
-const { trashStore } = groupLibrary;
 const { PrivateState } = stateLibrary;
 
-const config = PRIVATES.find(config => config.trash && config.trashTime !== undefined)!;
+const config = PRIVATES.find(config => config.trash)!;
 
 function setup() {
-  const cache = new Collection();
+  const cache = new Collection<string, { parentId: string | null }>();
   const guild = {
     id: config.guildId, available: true,
     channels: { cache, resolve: (id: string) => cache.get(id) }
@@ -47,60 +44,101 @@ function setup() {
   };
   guild.channels.cache.set(channel.id, channel);
 
-  const bot = { guilds: { cache: new Collection([[guild.id, guild]]) }, isReady: () => true };
-  const restart = () => new PrivateState(bot as unknown as Client);
-  const state = restart();
+  const bot = { guilds: { cache: new Collection([[guild.id, guild]]) } };
+  const state = new PrivateState(bot as unknown as Client);
   const group = [...state.groups][0]!;
   const voice = group.addVoice(channel as unknown as VoiceChannel, 'owner', new Set(), new Set());
   voice.time = performance.now() - group.deleteTimeout - 1;
 
-  return { channel, group, restart, root, state, trash, voice };
+  function archived(createdTimestamp: number, type = ChannelType.GuildVoice) {
+    const id = `archived-${createdTimestamp}`;
+    const room = {
+      id,
+      parentId: trash.id,
+      type,
+      createdTimestamp,
+      members: new Collection(),
+      delete: mock(async () => { cache.delete(id); })
+    };
+    cache.set(id, room);
+    return room;
+  }
+
+  return { archived, channel, group, root, state, trash, voice };
 }
 
 afterAll(() => {
   process.once('exit', () => rmSync(directory, { recursive: true, force: true }));
 });
 
-test('archives a room and deletes it after its saved deadline once it is empty', async () => {
-  const { channel, group, restart, state, trash, voice } = setup();
-  const startedAt = Date.now();
+test('fills the last archive slot without deleting an existing channel', async () => {
+  const { archived, channel, group, state, trash, voice } = setup();
+  const oldest = archived(1);
+  for (let i = 2; i <= 49; i++) archived(i);
   await state.loop();
 
   expect(channel.setParent).toHaveBeenCalledWith(trash, { lockPermissions: true });
   expect(group.voices.has(voice)).toBe(false);
   expect(channel.delete).not.toHaveBeenCalled();
-  const entry = trashStore.get(channel.id)!;
-  expect(entry.expiresAt).toBeGreaterThanOrEqual(startedAt + config.trashTime!);
-
-  await restart().loop();
-  expect(channel.delete).not.toHaveBeenCalled();
-
-  await trashStore.put(channel.id, { ...entry, expiresAt: Date.now() - 1 });
-  channel.members.set('member', {});
-  await restart().loop();
-  expect(channel.delete).not.toHaveBeenCalled();
-
-  channel.members.clear();
-  await restart().loop();
-  expect(channel.delete).toHaveBeenCalledTimes(1);
-  expect(trashStore.get(channel.id)).toBeUndefined();
+  expect(oldest.delete).not.toHaveBeenCalled();
+  expect(trash.children.cache.size).toBe(50);
 });
 
-test('leaves rooms that have been moved out of the trash category alone', async () => {
-  const { channel, restart, root, state } = setup();
-  await state.loop();
-  const entry = trashStore.get(channel.id)!;
-  await trashStore.put(channel.id, { ...entry, expiresAt: Date.now() - 1 });
-  channel.parentId = root.id;
+test('deletes the oldest empty voice channel before archiving into a full category', async () => {
+  const { archived, channel, root, state, trash } = setup();
+  const newer = archived(20);
+  const oldest = archived(10);
+  const occupied = archived(3);
+  occupied.members.set('member', {});
+  const text = archived(2, ChannelType.GuildText);
+  const outside = archived(1);
+  outside.parentId = root.id;
+  for (let i = 21; i <= 66; i++) archived(i);
+  channel.setParent.mockImplementationOnce(async (parent) => {
+    expect(trash.children.cache.has(oldest.id)).toBe(false);
+    channel.parentId = parent.id;
+  });
 
-  await restart().loop();
+  await state.loop();
+
+  expect(oldest.delete).toHaveBeenCalledTimes(1);
+  expect(newer.delete).not.toHaveBeenCalled();
+  expect(occupied.delete).not.toHaveBeenCalled();
+  expect(text.delete).not.toHaveBeenCalled();
+  expect(outside.delete).not.toHaveBeenCalled();
+  expect(channel.setParent).toHaveBeenCalledWith(trash, { lockPermissions: true });
+  expect(trash.children.cache.size).toBe(50);
+});
+
+test('keeps the incoming room tracked if a full category has no empty voice channels', async () => {
+  const { archived, channel, group, state, voice } = setup();
+  for (let i = 1; i <= 50; i++) archived(i).members.set('member', {});
+
+  await state.loop();
+
+  expect(channel.setParent).not.toHaveBeenCalled();
   expect(channel.delete).not.toHaveBeenCalled();
-  expect(trashStore.get(channel.id)).toBeUndefined();
+  expect(group.voices.has(voice)).toBe(true);
+});
+
+test('does not delete another room on retry if a failed move already freed a slot', async () => {
+  const { archived, channel, group, trash, voice } = setup();
+  const oldest = archived(1);
+  const next = archived(2);
+  for (let i = 3; i <= 50; i++) archived(i);
+  channel.setParent.mockRejectedValueOnce(new Error('Move failed'));
+
+  await expect(group.archiveVoice(voice.voice)).rejects.toThrow('Move failed');
+  expect(trash.children.cache.size).toBe(49);
+  expect(await group.archiveVoice(voice.voice)).toBe(true);
+  expect(oldest.delete).toHaveBeenCalledTimes(1);
+  expect(next.delete).not.toHaveBeenCalled();
+  expect(trash.children.cache.size).toBe(50);
 });
 
 test('still deletes empty rooms directly when trash is disabled', async () => {
   const { channel, group, voice } = setup();
-  group.trash = undefined;
+  group.trashCategoryId = undefined;
 
   await voice.loop();
   expect(channel.setParent).not.toHaveBeenCalled();

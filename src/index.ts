@@ -42,7 +42,7 @@ bot.on('channelDelete', (channel) => {
 
 bot.on('channelUpdate', (_, channel) => {
   const voice = state.getVoice(channel);
-  if (voice && voice.voice.parentId !== voice.group.trash?.categoryId)
+  if (voice && voice.voice.parentId !== voice.group.trashCategoryId)
     voice.updateConfig();
 });
 
